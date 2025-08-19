@@ -13,8 +13,16 @@ describe("country-codes-list", () => {
     expect(result[0].countryNameEn).toBe("Andorra");
   });
 
-  test("findOne returns a country", () => {
+  test("findOne returns a country by 2 digit ISO 3166-1 alpha-2", () => {
     const result = countryCodes.findOne("countryCode", "AF");
+    expect(result).toBeDefined();
+    if (result) {
+      expect(result.countryNameEn).toBe("Afghanistan");
+    }
+  });
+
+  test("findOne returns a country by 3 digit ISO 3166-1 alpha-3", () => {
+    const result = countryCodes.findOne("countryCodeAlpha3", "AFG");
     expect(result).toBeDefined();
     if (result) {
       expect(result.countryNameEn).toBe("Afghanistan");
