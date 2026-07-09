@@ -38,6 +38,11 @@ describe("country-codes-list", () => {
     expect(list["AD"]).toBeDefined();
   });
 
+  test("currency codes are valid ISO 4217 for Bolivia and Belarus", () => {
+    expect(countryCodes.findOne("countryCode", "BO")?.currencyCode).toBe("BOB");
+    expect(countryCodes.findOne("countryCode", "BY")?.currencyCode).toBe("BYN");
+  });
+
   test("all countriesData are valid", () => {
     const data = countryCodes.all();
     const shape = {

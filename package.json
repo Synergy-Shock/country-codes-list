@@ -4,6 +4,7 @@
   "description": "List of codes per country (languages, calling codes, currency codes, etc) with full TypeScript support.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": ["dist"],
   "scripts": {
     "build": "tsc",
     "test": "jest",
