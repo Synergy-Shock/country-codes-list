@@ -5,10 +5,11 @@ on:
     tags:
       - "v*"
 
-# Required for Trusted Publishing (OIDC) — no NPM_TOKEN needed.
+# id-token: write is required for Trusted Publishing (OIDC) — no NPM_TOKEN needed.
+# contents: write lets the workflow create the GitHub Release for the tag.
 permissions:
   id-token: write
-  contents: read
+  contents: write
 
 jobs:
   build-and-publish:
@@ -34,3 +35,18 @@ jobs:
       # Auth is via OIDC; provenance is generated automatically on public repos.
       - name: Publish package
         run: npm publish
+
+      # Create the GitHub Release for this tag (skips if it already exists,
+      # e.g. on a re-run). Notes are auto-generated from merged PRs/commits.
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "${{ github.ref_name }}" >/dev/null 2>&1; then
+            echo "Release ${{ github.ref_name }} already exists, skipping."
+          else
+            gh release create "${{ github.ref_name }}" \
+              --title "${{ github.ref_name }}" \
+              --generate-notes \
+              --verify-tag
+          fi
