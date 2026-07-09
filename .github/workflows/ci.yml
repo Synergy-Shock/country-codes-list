@@ -1,20 +1,23 @@
-name: Publish to NPM
+name: CI
 
 on:
   push:
-    tags:
-      - "v*"
+    branches: [master]
+  pull_request:
 
 jobs:
-  build-and-publish:
+  build-and-test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20, 22]
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node.js
+      - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          registry-url: "https://registry.npmjs.org"
+          node-version: ${{ matrix.node-version }}
           cache: npm
       - name: Install dependencies
         run: npm ci
@@ -22,7 +25,3 @@ jobs:
         run: npm run build
       - name: Run tests
         run: npm test
-      - name: Publish package
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
