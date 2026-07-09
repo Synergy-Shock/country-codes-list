@@ -61,3 +61,5 @@ typings/
 .next
 .DS_Store
 dist/
+# Local scratch / analysis files (not published, not tracked)
+.scratch/
