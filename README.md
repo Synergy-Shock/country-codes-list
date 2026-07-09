@@ -2,12 +2,13 @@
 
 Module with list of codes per country, including country codes, currency codes, and more.
 
-> [!WARNING]  
+> [!WARNING]
 > Release v2.0.0 introduces breaking changes with full TypeScript support and automated testing/publishing.
 
 ## Features
 
-- Country code (ISO 3166-1 alpha-2): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
+- 2 digit country code (ISO 3166-1 alpha-2): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
+- 3 digit country code (ISO 3166-1 alpha-3): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3)
 - Country Name: Each name in english and in the local country language
 - Currency Code (ISO 4217): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/ISO_4217)
 - Currency Name (ISO 4217): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/ISO_4217)
