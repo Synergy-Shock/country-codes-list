@@ -3098,7 +3098,7 @@ const countriesData: CountryData[] = [
     countryNameLocal: "Sierra Leone",
     countryCode: "SL",
     countryCodeAlpha3: "SLE",
-    currencyCode: "SLL",
+    currencyCode: "SLE",
     currencyNameEn: "Sierra Leonean leone",
     tinType: "",
     tinName: "",

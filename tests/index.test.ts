@@ -46,6 +46,10 @@ describe("country-codes-list", () => {
     expect(list["AD"]).toBeDefined();
   });
 
+  test("Sierra Leone uses the redenominated leone (SLE)", () => {
+    expect(countryCodes.findOne("countryCode", "SL")?.currencyCode).toBe("SLE");
+  });
+
   test("currency codes are valid ISO 4217 for Bolivia and Belarus", () => {
     expect(countryCodes.findOne("countryCode", "BO")?.currencyCode).toBe("BOB");
     expect(countryCodes.findOne("countryCode", "BY")?.currencyCode).toBe("BYN");
