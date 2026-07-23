@@ -40,6 +40,10 @@ describe("country-codes-list", () => {
     expect(result[0]).toHaveProperty("customCode");
   });
 
+  test("Cuba uses the Cuban peso (CUP)", () => {
+    expect(countryCodes.findOne("countryCode", "CU")?.currencyCode).toBe("CUP");
+  });
+
   test("customList returns object with countryCode as key", () => {
     const list = countryCodes.customList("countryCode", "{countryNameEn}");
     expect(Object.keys(list).length).toBeGreaterThan(0);
