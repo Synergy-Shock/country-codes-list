@@ -51,6 +51,11 @@ describe("country-codes-list", () => {
     expect(countryCodes.findOne("countryCode", "BY")?.currencyCode).toBe("BYN");
   });
 
+  test("Croatia and Bulgaria use the euro", () => {
+    expect(countryCodes.findOne("countryCode", "HR")?.currencyCode).toBe("EUR");
+    expect(countryCodes.findOne("countryCode", "BG")?.currencyCode).toBe("EUR");
+  });
+
   test("all countriesData are valid", () => {
     const data = countryCodes.all();
     const shape = {
