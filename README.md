@@ -170,6 +170,29 @@ const myCountryCodesObject = countryCodes.customList(
 );
 ```
 
+This will return an object like this one:
+
+```js
+{
+    'AD': '[AD] Andorra: +376',
+    'AE': '[AE] United Arab Emirates: +971',
+    'AF': '[AF] Afghanistan: +93',
+    'AG': '[AG] Antigua and Barbuda: +1',
+    'AI': '[AI] Anguilla: +1',
+    'AL': '[AL] Albania: +355',
+    'AM': '[AM] Armenia: +374',
+    'AO': '[AO] Angola: +244',
+    'AQ': '[AQ] Antarctica: +',
+    'AR': '[AR] Argentina: +54',
+    'AS': '[AS] American Samoa: +1',
+    'AT': '[AT] Austria: +43',
+    'AU': '[AU] Australia: +61',
+    'AW': '[AW] Aruba: +297',
+    ...
+}
+
+```
+
 ### API Details – customGroupedList Method
 
 Same signature as `customList`, but each key maps to an **array** of every matching country instead of just the last one. Use it whenever several countries share the key — the United States, Canada and the Caribbean all answer to `+1`, and the whole euro zone shares `EUR`.
@@ -194,25 +217,25 @@ countryCodes.customGroupedList("region", "{countryNameEn}", {
 });
 ```
 
-This will return an object like this one:
+This will return an object like this one — keyed by region, with an array of country names per group:
 
 ```js
 {
-    'AD': '[AD] Andorra: +376',
-    'AE': '[AE] United Arab Emirates: +971',
-    'AF': '[AF] Afghanistan: +93',
-    'AG': '[AG] Antigua and Barbuda: +1',
-    'AI': '[AI] Anguilla: +1',
-    'AL': '[AL] Albania: +355',
-    'AM': '[AM] Armenia: +374',
-    'AO': '[AO] Angola: +244',
-    'AQ': '[AQ] Antarctica: +',
-    'AR': '[AR] Argentina: +54',
-    'AS': '[AS] American Samoa: +1',
-    'AT': '[AT] Austria: +43',
-    'AU': '[AU] Australia: +61',
-    'AW': '[AW] Aruba: +297',
-    ...
+    'Europe': ['Andorra', 'Austria', 'Åland Islands', 'Belgium', ...],
+    'South/Latin America': ['Saint Barthélemy', 'French Guiana', 'Guadeloupe', ...],
+    'North America': ['Saint Pierre and Miquelon'],
+    'Asia & Pacific': ['Réunion'],
+    'Africa': ['Mayotte'],
+    'Indian Ocean': ['French Southern and Antarctic Lands'],
 }
+```
 
+Keys that no country matched are simply absent, so the return type is `Partial<Record<string, string[]>>` — check before use:
+
+```js
+const byRegion = countryCodes.customGroupedList("region", "{countryCode}", {
+  filter: (country) => country.countryCode === "AR",
+});
+byRegion["Europe"]; // undefined — no European country passed the filter
+byRegion["Europe"]?.length ?? 0; // 0
 ```

@@ -146,20 +146,23 @@ export function customList(
 /**
  * Same as {@link customList}, but every key maps to an array of all matching
  * countries instead of just the last one. Use this for keys that several
- * countries share — `countryCallingCode` (26 countries answer to `"1"`),
- * `currencyCode` (the euro zone), `region`, `officialLanguageCode`.
+ * countries share — `countryCallingCode` (the US, Canada and the Caribbean all
+ * answer to `"1"`), `currencyCode` (the euro zone), `region`,
+ * `officialLanguageCode`.
  *
- * Values keep dataset order, and every key holds at least one entry.
+ * Groups keep dataset order and are never empty, but keys that matched no
+ * country are absent altogether — hence `Partial`. This matters most with
+ * `filter`, which can exclude a group entirely.
  *
  * @example
  * customGroupedList("countryCallingCode", "{countryCode}")["1"];
- * // -> ["CA", "US", "DO", ...]
+ * // -> ["CA", "GU", "PR", "US", "DO", "UM"]
  */
 export function customGroupedList(
   key: keyof CountryData = "countryCallingCode",
   label: string = "{countryNameEn} ({countryCode})",
   { filter: filterFunc }: { filter?: (cd: CountryData) => boolean } = {}
-): Record<string, string[]> {
+): Partial<Record<string, string[]>> {
   const finalObject: Record<string, string[]> = {};
   let data: CountryData[] = countriesData;
   if (typeof filterFunc === "function") {
