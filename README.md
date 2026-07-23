@@ -3,7 +3,9 @@
 Module with list of codes per country, including country codes, currency codes, and more.
 
 > [!WARNING]
-> Release v2.0.0 introduces breaking changes with full TypeScript support and automated testing/publishing.
+> Release v3.0.0 introduces breaking changes: `countryCallingCode` no longer folds in national area codes, `areaCodes` is now a required `string[]`, and several functions narrow their key parameter to string-valued properties. See the [v2 → v3 migration guide](#migration-guide-v2x-to-v30).
+>
+> Release v2.0.0 introduced breaking changes with full TypeScript support and automated testing/publishing.
 
 ## Features
 
@@ -83,6 +85,36 @@ npm test
    ```typescript
    // This now requires valid country property keys
    countryCodes.filter("invalidKey", "value"); // TypeScript error
+   ```
+
+## Migration Guide (v2.x to v3.0)
+
+### Breaking Changes
+
+1. **`countryCallingCode` is now the ITU-T E.164 country code only** — national area codes are no longer folded in. Several countries changed value, most notably the [NANP](https://en.wikipedia.org/wiki/North_American_Numbering_Plan) members that used to carry their area code:
+
+   ```js
+   // Old (v2.x)
+   countryCodes.findOne("countryCode", "JM").countryCallingCode; // '876'
+
+   // New (v3.0)
+   countryCodes.findOne("countryCode", "JM").countryCallingCode; // '1'
+   countryCodes.findOne("countryCode", "JM").areaCodes; // ['876', '658']
+   ```
+
+   If you relied on the old value to dial a full number, concatenate the calling code with an area code: `` `+${cc}${areaCodes[0]}` ``.
+
+2. **`areaCodes` is now a required `string[]`** (previously an optional `any[]`). It is **partially populated** — an empty array means "not recorded", not "no area codes". Every NANP member is populated; other shared calling codes (`44`, `358`, `61`) are not yet.
+
+3. **Key parameters narrowed to `CountryScalarProperty`.** `filter`, `findOne`, `customList`, `customGroupedList` and `customArray`'s `sortDataBy` no longer accept array-valued properties (`altCodes`, `areaCodes`). This was already broken at runtime; it is now a compile-time error:
+
+   ```typescript
+   // Old (v2.x): type-checked but returned garbage at runtime
+   countryCodes.customList("altCodes", "{countryCode}");
+
+   // New (v3.0): TypeScript error
+   // To look up by an alternative code, use findOneByCode instead:
+   countryCodes.findOneByCode("UK").countryCode; // 'GB'
    ```
 
 ## Usage
