@@ -1,6 +1,6 @@
 {
   "name": "country-codes-list",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "description": "List of codes per country (languages, calling codes, currency codes, etc) with full TypeScript support.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
