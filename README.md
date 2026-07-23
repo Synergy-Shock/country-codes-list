@@ -17,7 +17,8 @@ Module with list of codes per country, including country codes, currency codes, 
 - TIN Name: Obtained from [Wikipedia](https://en.wikipedia.org/wiki/VAT_identification_number)
 - Official language code (usually from ISO 639-1, or ISO 639-3 otherwise)): Obtained from [Open Street Map](https://wiki.openstreetmap.org/wiki/Nominatim/Country_Codes). Returns only the first official language code per country
 - Official language name: Each name in english and in the local country language
-- Country Calling Code: The phone calling code for the country. Obtained from [Wikipedia](https://en.wikipedia.org/wiki/List_of_country_calling_codes#Alphabetical_listing_by_country_or_region).
+- Country Calling Code: The phone calling code for the country. Obtained from [Wikipedia](https://en.wikipedia.org/wiki/List_of_country_calling_codes#Alphabetical_listing_by_country_or_region). This is the ITU-T E.164 country code only (1-3 digits, no `+`, no spaces) — national area codes are never folded into it.
+- Area Codes: The national area codes that follow the calling code, as `string[]`. **Partially populated** — an empty array means "not recorded", not "this country has no area codes". Every member of the [North American Numbering Plan](https://en.wikipedia.org/wiki/North_American_Numbering_Plan) carries its area code (Jamaica `["876", "658"]`, Barbados `["246"]`, …), so `+1` is fully disambiguated except for the US, whose hundreds of area codes are out of scope here (Canada's are populated, a pre-existing exception). Other shared calling codes are **not** disambiguated: AU and CX both use `61`, AX and FI both use `358`, and GB, GG, IM and JE all use `44`, each with an empty array.
 - Region: The Regional Classifications are from the [International Telecommunications Union](http://www.itu.int/ITU-D/ict/definitions/regions/index.html). Seen [here](https://meta.wikimedia.org/wiki/List_of_countries_by_regional_classification)
 
 ## Installation
