@@ -3,6 +3,16 @@ type CountryData = {
   countryNameLocal: string;
   countryCode: string;
   countryCodeAlpha3: string;
+  /**
+   * Alternative 2-letter codes that identify this country outside ISO 3166-1's
+   * primary assignment — ISO exceptional reservations (`UK` for the United
+   * Kingdom) and long-standing institutional conventions (`EL` for Greece in
+   * EU VAT numbers and Eurostat). Never a code assigned to another country.
+   *
+   * `countryCode` stays the official ISO 3166-1 alpha-2 value; use
+   * `findOneByCode` to resolve any of these to a country.
+   */
+  altCodes?: string[];
   currencyCode: string;
   currencyNameEn: string;
   tinType: string;
@@ -1344,6 +1354,7 @@ const countriesData: CountryData[] = [
     countryNameLocal: "Ελλάδα",
     countryCode: "GR",
     countryCodeAlpha3: "GRC",
+    altCodes: ["EL"],
     currencyCode: "EUR",
     currencyNameEn: "Euro",
     tinType: "",
@@ -3980,6 +3991,7 @@ const countriesData: CountryData[] = [
     countryNameLocal: "Great Britain",
     countryCode: "GB",
     countryCodeAlpha3: "GBR",
+    altCodes: ["UK"],
     currencyCode: "GBP",
     currencyNameEn: "Pound sterling",
     tinType: "VAT Reg No",

@@ -30,6 +30,39 @@ export function findOne(
   );
 }
 
+/**
+ * Resolves any 2- or 3-letter country code to its country, case-insensitively.
+ *
+ * Unlike {@link findOne}, this looks beyond the primary ISO 3166-1 alpha-2
+ * value: it matches `countryCode`, `countryCodeAlpha3` and `altCodes`, so codes
+ * that arrive from outside your control still resolve. `UK` is the common one —
+ * it is exceptionally reserved for the United Kingdom, whose ISO code is `GB`,
+ * and it turns up in browser locales, EU VAT numbers and legacy databases.
+ *
+ * Official codes always win: no country's `altCodes` may shadow another
+ * country's `countryCode` or `countryCodeAlpha3`.
+ *
+ * @example
+ * findOneByCode("UK")?.countryCode; // -> "GB"
+ * findOneByCode("gbr")?.countryCode; // -> "GB"
+ */
+export function findOneByCode(code: string): CountryData | undefined {
+  if (typeof code !== "string") return undefined;
+  const normalized = code.trim().toUpperCase();
+  if (!normalized) return undefined;
+
+  return (
+    countriesData.find(
+      (countryData: CountryData) =>
+        countryData.countryCode === normalized ||
+        countryData.countryCodeAlpha3 === normalized
+    ) ??
+    countriesData.find((countryData: CountryData) =>
+      countryData.altCodes?.includes(normalized)
+    )
+  );
+}
+
 export function customArray(
   fields: Record<string, string> = {
     name: "{countryNameEn} ({countryCode})",
