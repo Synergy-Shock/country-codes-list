@@ -117,6 +117,14 @@ export function customArray(
   return finalCollection;
 }
 
+/**
+ * Builds an object keyed by `key`, with each value rendered from `label`.
+ *
+ * `key` must be unique across the dataset, otherwise entries overwrite each
+ * other and only the last one survives. `countryCode` and `countryCodeAlpha3`
+ * are unique; `countryCallingCode`, `currencyCode` and `region` are not — use
+ * {@link customGroupedList} for those.
+ */
 export function customList(
   key: CountryScalarProperty = "countryCode",
   label: string = "{countryNameEn} ({countryCode})",
@@ -130,6 +138,42 @@ export function customList(
   data.forEach((countryData: CountryData) => {
     const value = supplant(label, countryData);
     finalObject[String(countryData[key])] = value;
+  });
+
+  return finalObject;
+}
+
+/**
+ * Same as {@link customList}, but every key maps to an array of all matching
+ * countries instead of just the last one. Use this for keys that several
+ * countries share — `countryCallingCode` (the US, Canada and the Caribbean all
+ * answer to `"1"`), `currencyCode` (the euro zone), `region`,
+ * `officialLanguageCode`.
+ *
+ * Groups keep dataset order and are never empty, but keys that matched no
+ * country are absent altogether — hence `Partial`. This matters most with
+ * `filter`, which can exclude a group entirely.
+ *
+ * @example
+ * customGroupedList("countryCallingCode", "{countryCode}")["1"];
+ * // -> ["AG", "AI", "AS", "BB", "BM", "CA", ...] — 26 NANP countries
+ */
+export function customGroupedList(
+  key: CountryScalarProperty = "countryCallingCode",
+  label: string = "{countryNameEn} ({countryCode})",
+  { filter: filterFunc }: { filter?: (cd: CountryData) => boolean } = {}
+): Partial<Record<string, string[]>> {
+  const finalObject: Record<string, string[]> = {};
+  let data: CountryData[] = countriesData;
+  if (typeof filterFunc === "function") {
+    data = data.filter(filterFunc);
+  }
+  data.forEach((countryData: CountryData) => {
+    const groupKey = String(countryData[key]);
+    if (!finalObject[groupKey]) {
+      finalObject[groupKey] = [];
+    }
+    finalObject[groupKey].push(supplant(label, countryData));
   });
 
   return finalObject;

@@ -156,6 +156,9 @@ The available placeholders are:
 - `region`
 - `globalSouth`
 
+> [!IMPORTANT]
+> The key must be **unique** across countries. `countryCode` and `countryCodeAlpha3` are; `countryCallingCode`, `currencyCode`, `region` and `officialLanguageCode` are not. Keying on a non-unique property makes countries overwrite each other and only the last one survives — use [`customGroupedList`](#api-details--customgroupedlist-method) instead.
+
 #### Example
 
 ```js
@@ -188,4 +191,53 @@ This will return an object like this one:
     ...
 }
 
+```
+
+### API Details – customGroupedList Method
+
+Same signature as `customList`, but each key maps to an **array** of every matching country instead of just the last one. Use it whenever several countries share the key — the United States, Canada and the Caribbean all answer to `+1`, and the whole euro zone shares `EUR`.
+
+```js
+const countryCodes = require("country-codes-list");
+
+// customList: one country per calling code — the other 25 are lost
+countryCodes.customList("countryCallingCode", "{countryCode}")["1"];
+// => 'UM'
+
+// customGroupedList: all of them
+countryCodes.customGroupedList("countryCallingCode", "{countryCode}")["1"];
+// => ['AG', 'AI', 'AS', 'BB', 'BM', 'CA', 'DM', 'GD', 'GU', 'JM', 'KN', 'LC',
+//     'MS', 'PR', 'SX', 'TT', 'US', 'VC', 'VG', 'VI', 'DO', 'BS', 'KY', 'MP',
+//     'TC', 'UM']
+```
+
+It takes the same third `{ filter }` option:
+
+```js
+countryCodes.customGroupedList("region", "{countryNameEn}", {
+  filter: (country) => country.currencyCode === "EUR",
+});
+```
+
+This will return an object like this one — keyed by region, with an array of country names per group:
+
+```js
+{
+    'Europe': ['Andorra', 'Austria', 'Åland Islands', 'Belgium', ...],
+    'South/Latin America': ['Saint Barthélemy', 'French Guiana', 'Guadeloupe', ...],
+    'North America': ['Saint Pierre and Miquelon'],
+    'Asia & Pacific': ['Réunion'],
+    'Africa': ['Mayotte'],
+    'Indian Ocean': ['French Southern and Antarctic Lands'],
+}
+```
+
+Keys that no country matched are simply absent, so the return type is `Partial<Record<string, string[]>>` — check before use:
+
+```js
+const byRegion = countryCodes.customGroupedList("region", "{countryCode}", {
+  filter: (country) => country.countryCode === "AR",
+});
+byRegion["Europe"]; // undefined — no European country passed the filter
+byRegion["Europe"]?.length ?? 0; // 0
 ```
