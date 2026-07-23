@@ -17,8 +17,13 @@ type CountryData = {
   countryCallingCode: string;
   /**
    * National area / numbering-plan codes that sit between the calling code and
-   * the subscriber number. Populated for countries that share a calling code
-   * (e.g. every NANP member uses `countryCallingCode: "1"`).
+   * the subscriber number.
+   *
+   * **Partially populated.** Every NANP member carries its NPA, so `+1` is fully
+   * disambiguated, but other shared calling codes are not: AU and CX both use
+   * `61`, AX and FI both use `358`, and GB, GG, IM and JE all use `44`, each
+   * with an empty array. Treat an empty array as "not recorded", not as "this
+   * country has no area codes".
    */
   areaCodes: string[];
   region: string;
@@ -4065,7 +4070,7 @@ const countriesData: CountryData[] = [
     officialLanguageNameEn: "English",
     officialLanguageNameLocal: "English",
     countryCallingCode: "61",
-    areaCodes: ["891"],
+    areaCodes: ["8"],
     region: "Australia",
     flag: "🇨🇨",
   },

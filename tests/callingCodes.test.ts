@@ -119,7 +119,9 @@ describe("NANP members (issue #52)", () => {
 describe("non-NANP countries that embedded an area code", () => {
   test("Cocos (Keeling) Islands dial +61 (Australia)", () => {
     expect(byCode("CC").countryCallingCode).toBe("61");
-    expect(byCode("CC").areaCodes).toEqual(["891"]);
+    // Australia's area codes are single-digit; Cocos sits in 08. The trailing
+    // digits of the old "61 891" value were subscriber prefix, not area code.
+    expect(byCode("CC").areaCodes).toEqual(["8"]);
   });
 
   test("Svalbard and Jan Mayen dial +47 (Norway)", () => {
