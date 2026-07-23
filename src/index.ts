@@ -12,8 +12,17 @@ export const utils = {
   groupBy,
 };
 
+/**
+ * Every country in the dataset, in dataset order.
+ *
+ * Returns a fresh array each call, so reordering or resizing it is safe — the
+ * dataset is module state shared by every export, and handing out a live
+ * reference let one consumer's `sort()` or `push()` change what every later
+ * call returned. The country objects themselves are still shared: treat them
+ * as read-only.
+ */
 export function all(): CountryData[] {
-  return countriesData;
+  return [...countriesData];
 }
 
 export function filter(
@@ -94,7 +103,10 @@ export function customArray(
 
   if (sortDataBy) {
     const collator = new Intl.Collator([], { sensitivity: "accent" });
-    data.sort((a: CountryData, b: CountryData) =>
+    // Copy before sorting: without a `filter`, `data` still aliases
+    // `countriesData`, and an in-place sort would permanently reorder the
+    // dataset for `all`, `customList` and `customGroupedList` too.
+    data = [...data].sort((a: CountryData, b: CountryData) =>
       collator.compare(a[sortDataBy] as string, b[sortDataBy] as string)
     );
   }
