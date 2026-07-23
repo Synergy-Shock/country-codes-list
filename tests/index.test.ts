@@ -29,6 +29,11 @@ describe("country-codes-list", () => {
     }
   });
 
+  test("Curaçao and Sint Maarten use the Caribbean guilder (XCG)", () => {
+    expect(countryCodes.findOne("countryCode", "CW")?.currencyCode).toBe("XCG");
+    expect(countryCodes.findOne("countryCode", "SX")?.currencyCode).toBe("XCG");
+  });
+
   test("customArray returns mapped array with correct placeholders", () => {
     const fields = {
       customName: "{countryNameEn}",
