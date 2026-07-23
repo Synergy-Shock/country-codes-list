@@ -9,6 +9,7 @@ Module with list of codes per country, including country codes, currency codes, 
 
 - 2 digit country code (ISO 3166-1 alpha-2): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
 - 3 digit country code (ISO 3166-1 alpha-3): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3)
+- Alternative country codes (`altCodes`): non-primary 2-letter codes that still identify a country in the wild — `UK` for the United Kingdom (whose ISO code is `GB`) and `EL` for Greece (whose ISO code is `GR`). Resolve any of them with [`findOneByCode`](#api-details--findonebycode-method)
 - Country Name: Each name in english and in the local country language
 - Currency Code (ISO 4217): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/ISO_4217)
 - Currency Name (ISO 4217): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/ISO_4217)
@@ -111,6 +112,27 @@ const myCountryCodesObject = countryCodes.customList(
 );
 console.log(myCountryCodesObject);
 ```
+
+### API Details – findOneByCode Method
+
+Resolves a 2- or 3-letter country code to a country, case-insensitively, matching the official ISO 3166-1 alpha-2 and alpha-3 codes **and** the alternative codes in `altCodes`.
+
+Use it when the code comes from somewhere you don't control — a browser or OS locale, an EU VAT number, an upstream API, a legacy database — where `UK` shows up as often as `GB`:
+
+```js
+const countryCodes = require("country-codes-list");
+
+countryCodes.findOneByCode("UK").countryCode; // 'GB'
+countryCodes.findOneByCode("gbr").countryCode; // 'GB'
+countryCodes.findOneByCode("EL").countryCode; // 'GR'
+countryCodes.findOneByCode("ZZ"); // undefined
+```
+
+Input is trimmed and must be 2 or 3 ASCII letters; anything else returns `undefined`. The validation happens *before* uppercasing on purpose — Unicode case mapping turns `"ß"` into `"SS"` and `"ı"` into `"I"`, so validating afterwards would let junk input resolve to real countries.
+
+Note that `altCodes` and `areaCodes` hold arrays, so they can't be used as lookup or list keys. `filter`, `findOne` and `customList` accept only string-valued properties (the exported `CountryScalarProperty` type); reach for `findOneByCode` to search `altCodes`.
+
+`UK` is [exceptionally reserved](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Exceptional_reservations) in ISO 3166-1 at the United Kingdom's request; `EL` is the European Commission's code for Greece. Neither replaces the official code — `findOne("countryCode", "UK")` still returns `undefined`, and `countryCode` remains `GB`/`GR`.
 
 ### API Details – customList Method
 

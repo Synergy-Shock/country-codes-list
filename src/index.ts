@@ -1,8 +1,12 @@
 import groupBy from "./utils/groupBy";
 import supplant from "./utils/supplant";
-import countriesData, { CountryData, CountryProperty } from "./countriesData";
+import countriesData, {
+  CountryData,
+  CountryProperty,
+  CountryScalarProperty,
+} from "./countriesData";
 
-export type { CountryData, CountryProperty };
+export type { CountryData, CountryProperty, CountryScalarProperty };
 
 export const utils = {
   groupBy,
@@ -13,7 +17,7 @@ export function all(): CountryData[] {
 }
 
 export function filter(
-  countryProperty: CountryProperty,
+  countryProperty: CountryScalarProperty,
   value: string
 ): CountryData[] {
   return countriesData.filter(
@@ -22,11 +26,48 @@ export function filter(
 }
 
 export function findOne(
-  countryProperty: CountryProperty,
+  countryProperty: CountryScalarProperty,
   value: string
 ): CountryData | undefined {
   return countriesData.find(
     (countryData: CountryData) => countryData[countryProperty] === value
+  );
+}
+
+/**
+ * Resolves any 2- or 3-letter country code to its country, case-insensitively.
+ *
+ * Unlike {@link findOne}, this looks beyond the primary ISO 3166-1 alpha-2
+ * value: it matches `countryCode`, `countryCodeAlpha3` and `altCodes`, so codes
+ * that arrive from outside your control still resolve. `UK` is the common one —
+ * it is exceptionally reserved for the United Kingdom, whose ISO code is `GB`,
+ * and it turns up in browser locales, EU VAT numbers and legacy databases.
+ *
+ * Official codes always win: no country's `altCodes` may shadow another
+ * country's `countryCode` or `countryCodeAlpha3`.
+ *
+ * @example
+ * findOneByCode("UK")?.countryCode; // -> "GB"
+ * findOneByCode("gbr")?.countryCode; // -> "GB"
+ */
+export function findOneByCode(code: string): CountryData | undefined {
+  if (typeof code !== "string") return undefined;
+  const trimmed = code.trim();
+  // Validate before uppercasing: Unicode case mapping can turn invalid input
+  // into a real code ("ß" and "ſs" uppercase to "SS", "ı" to "I"), which would
+  // otherwise resolve to South Sudan and friends.
+  if (!/^[A-Za-z]{2,3}$/.test(trimmed)) return undefined;
+  const normalized = trimmed.toUpperCase();
+
+  return (
+    countriesData.find(
+      (countryData: CountryData) =>
+        countryData.countryCode === normalized ||
+        countryData.countryCodeAlpha3 === normalized
+    ) ??
+    countriesData.find((countryData: CountryData) =>
+      countryData.altCodes?.includes(normalized)
+    )
   );
 }
 
@@ -41,7 +82,7 @@ export function customArray(
     filter: filterFunc,
   }: {
     sortBy?: CountryProperty;
-    sortDataBy?: CountryProperty;
+    sortDataBy?: CountryScalarProperty;
     filter?: (cd: CountryData) => boolean;
   } = {}
 ) {
@@ -77,7 +118,7 @@ export function customArray(
 }
 
 export function customList(
-  key: keyof CountryData = "countryCode",
+  key: CountryScalarProperty = "countryCode",
   label: string = "{countryNameEn} ({countryCode})",
   { filter: filterFunc }: { filter?: (cd: CountryData) => boolean } = {}
 ) {
