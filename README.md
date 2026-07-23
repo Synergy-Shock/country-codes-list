@@ -128,6 +128,10 @@ countryCodes.findOneByCode("EL").countryCode; // 'GR'
 countryCodes.findOneByCode("ZZ"); // undefined
 ```
 
+Input is trimmed and must be 2 or 3 ASCII letters; anything else returns `undefined`. The validation happens *before* uppercasing on purpose — Unicode case mapping turns `"ß"` into `"SS"` and `"ı"` into `"I"`, so validating afterwards would let junk input resolve to real countries.
+
+Note that `altCodes` and `areaCodes` hold arrays, so they can't be used as lookup or list keys. `filter`, `findOne` and `customList` accept only string-valued properties (the exported `CountryScalarProperty` type); reach for `findOneByCode` to search `altCodes`.
+
 `UK` is [exceptionally reserved](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Exceptional_reservations) in ISO 3166-1 at the United Kingdom's request; `EL` is the European Commission's code for Greece. Neither replaces the official code — `findOne("countryCode", "UK")` still returns `undefined`, and `countryCode` remains `GB`/`GR`.
 
 ### API Details – customList Method

@@ -88,6 +88,27 @@ describe("findOneByCode", () => {
     expect(countryCodes.findOneByCode(null as any)).toBeUndefined();
   });
 
+  test("Unicode case mapping cannot forge a valid code", () => {
+    // "ß".toUpperCase() === "SS" and "ı".toUpperCase() === "I", so uppercasing
+    // before validating would resolve these to South Sudan and BIOT.
+    expect("ß".toUpperCase()).toBe("SS"); // documents why the guard exists
+    expect(countryCodes.findOneByCode("ß")).toBeUndefined();
+    expect(countryCodes.findOneByCode("ſs")).toBeUndefined();
+    expect(countryCodes.findOneByCode("ıo")).toBeUndefined();
+    expect(countryCodes.findOneByCode("İO")).toBeUndefined();
+    // The real codes those inputs tried to impersonate still resolve.
+    expect(countryCodes.findOneByCode("SS")?.countryCode).toBe("SS");
+    expect(countryCodes.findOneByCode("IO")?.countryCode).toBe("IO");
+  });
+
+  test("rejects anything that is not a 2- or 3-letter ASCII code", () => {
+    ["G", "GBRA", "G1", "G-B", "G B", "42", "🇬🇧", "G_B"].forEach((input) => {
+      expect(countryCodes.findOneByCode(input)).toBeUndefined();
+    });
+    // Surrounding whitespace is still trimmed, not rejected.
+    expect(countryCodes.findOneByCode("\tGB \n")?.countryCode).toBe("GB");
+  });
+
   test("resolves every official code in the dataset", () => {
     const unresolved = all.filter(
       (c) =>
@@ -118,5 +139,28 @@ describe("findOne is unchanged", () => {
     expect(countryCodes.findOne("countryCode", "GB")?.countryNameEn).toBe(
       "United Kingdom"
     );
+  });
+});
+
+describe("array-valued properties are not accepted as lookup keys", () => {
+  // These are compile-time assertions: if any of these calls ever type-checks,
+  // tsc fails the build with "Unused '@ts-expect-error' directive".
+  test("filter, findOne and customList reject altCodes and areaCodes", () => {
+    // @ts-expect-error altCodes holds an array, so === can never match
+    expect(countryCodes.filter("altCodes", "UK")).toEqual([]);
+    // @ts-expect-error same for findOne
+    expect(countryCodes.findOne("altCodes", "UK")).toBeUndefined();
+    // @ts-expect-error areaCodes has the same problem
+    expect(countryCodes.findOne("areaCodes", "876")).toBeUndefined();
+    // @ts-expect-error keying a list on an array field collapses countries
+    expect(countryCodes.customList("altCodes", "{countryCode}")).toBeDefined();
+  });
+
+  test("scalar properties still work", () => {
+    expect(countryCodes.filter("countryCode", "GB")).toHaveLength(1);
+    expect(countryCodes.findOne("currencyCode", "GBP")).toBeDefined();
+    expect(
+      Object.keys(countryCodes.customList("countryCode", "{countryNameEn}"))
+    ).toContain("GB");
   });
 });

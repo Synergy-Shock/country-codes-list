@@ -28,6 +28,17 @@ type CountryData = {
 
 type CountryProperty = keyof CountryData;
 
+/**
+ * The subset of {@link CountryProperty} whose values are plain strings.
+ *
+ * Array-valued fields (`areaCodes`, `altCodes`) can't be compared with `===`,
+ * used as an object key, or sorted with a collator, so the lookup and list
+ * helpers accept only these. Use `findOneByCode` to search `altCodes`.
+ */
+type CountryScalarProperty = {
+  [K in keyof CountryData]-?: CountryData[K] extends string ? K : never;
+}[keyof CountryData];
+
 const countriesData: CountryData[] = [
   {
     countryNameEn: "Andorra",
@@ -4344,5 +4355,5 @@ const countriesData: CountryData[] = [
   },
 ];
 
-export type { CountryData, CountryProperty };
+export type { CountryData, CountryProperty, CountryScalarProperty };
 export default countriesData;

@@ -1,8 +1,12 @@
 import groupBy from "./utils/groupBy";
 import supplant from "./utils/supplant";
-import countriesData, { CountryData, CountryProperty } from "./countriesData";
+import countriesData, {
+  CountryData,
+  CountryProperty,
+  CountryScalarProperty,
+} from "./countriesData";
 
-export type { CountryData, CountryProperty };
+export type { CountryData, CountryProperty, CountryScalarProperty };
 
 export const utils = {
   groupBy,
@@ -13,7 +17,7 @@ export function all(): CountryData[] {
 }
 
 export function filter(
-  countryProperty: CountryProperty,
+  countryProperty: CountryScalarProperty,
   value: string
 ): CountryData[] {
   return countriesData.filter(
@@ -22,7 +26,7 @@ export function filter(
 }
 
 export function findOne(
-  countryProperty: CountryProperty,
+  countryProperty: CountryScalarProperty,
   value: string
 ): CountryData | undefined {
   return countriesData.find(
@@ -48,8 +52,12 @@ export function findOne(
  */
 export function findOneByCode(code: string): CountryData | undefined {
   if (typeof code !== "string") return undefined;
-  const normalized = code.trim().toUpperCase();
-  if (!normalized) return undefined;
+  const trimmed = code.trim();
+  // Validate before uppercasing: Unicode case mapping can turn invalid input
+  // into a real code ("ß" and "ſs" uppercase to "SS", "ı" to "I"), which would
+  // otherwise resolve to South Sudan and friends.
+  if (!/^[A-Za-z]{2,3}$/.test(trimmed)) return undefined;
+  const normalized = trimmed.toUpperCase();
 
   return (
     countriesData.find(
@@ -74,7 +82,7 @@ export function customArray(
     filter: filterFunc,
   }: {
     sortBy?: CountryProperty;
-    sortDataBy?: CountryProperty;
+    sortDataBy?: CountryScalarProperty;
     filter?: (cd: CountryData) => boolean;
   } = {}
 ) {
@@ -110,7 +118,7 @@ export function customArray(
 }
 
 export function customList(
-  key: keyof CountryData = "countryCode",
+  key: CountryScalarProperty = "countryCode",
   label: string = "{countryNameEn} ({countryCode})",
   { filter: filterFunc }: { filter?: (cd: CountryData) => boolean } = {}
 ) {
