@@ -21,6 +21,10 @@ describe("country-codes-list", () => {
     }
   });
 
+  test("Zimbabwe uses Zimbabwe Gold (ZWG)", () => {
+    expect(countryCodes.findOne("countryCode", "ZW")?.currencyCode).toBe("ZWG");
+  });
+
   test("findOne returns a country by 3 digit ISO 3166-1 alpha-3", () => {
     const result = countryCodes.findOne("countryCodeAlpha3", "AFG");
     expect(result).toBeDefined();
