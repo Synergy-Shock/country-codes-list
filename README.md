@@ -200,13 +200,15 @@ Same signature as `customList`, but each key maps to an **array** of every match
 ```js
 const countryCodes = require("country-codes-list");
 
-// customList: one country per calling code — the others are lost
+// customList: one country per calling code — the other 25 are lost
 countryCodes.customList("countryCallingCode", "{countryCode}")["1"];
-// => 'DO'
+// => 'UM'
 
 // customGroupedList: all of them
 countryCodes.customGroupedList("countryCallingCode", "{countryCode}")["1"];
-// => ['CA', 'GU', 'PR', 'US', 'DO', 'UM']
+// => ['AG', 'AI', 'AS', 'BB', 'BM', 'CA', 'DM', 'GD', 'GU', 'JM', 'KN', 'LC',
+//     'MS', 'PR', 'SX', 'TT', 'US', 'VC', 'VG', 'VI', 'DO', 'BS', 'KY', 'MP',
+//     'TC', 'UM']
 ```
 
 It takes the same third `{ filter }` option:

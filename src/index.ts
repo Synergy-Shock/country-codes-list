@@ -156,10 +156,10 @@ export function customList(
  *
  * @example
  * customGroupedList("countryCallingCode", "{countryCode}")["1"];
- * // -> ["CA", "GU", "PR", "US", "DO", "UM"]
+ * // -> ["AG", "AI", "AS", "BB", "BM", "CA", ...] — 26 NANP countries
  */
 export function customGroupedList(
-  key: keyof CountryData = "countryCallingCode",
+  key: CountryScalarProperty = "countryCallingCode",
   label: string = "{countryNameEn} ({countryCode})",
   { filter: filterFunc }: { filter?: (cd: CountryData) => boolean } = {}
 ): Partial<Record<string, string[]>> {

@@ -113,3 +113,20 @@ describe("customGroupedList", () => {
     expect(grouped["54"]).toEqual(["Argentina (AR)"]);
   });
 });
+
+describe("array-valued properties are rejected as group keys", () => {
+  test("customGroupedList accepts only scalar properties", () => {
+    // @ts-expect-error areaCodes holds an array; String([...]) is not a key
+    expect(countryCodes.customGroupedList("areaCodes", "{countryCode}")).toBeDefined();
+    // @ts-expect-error same for altCodes — use findOneByCode to search those
+    expect(countryCodes.customGroupedList("altCodes", "{countryCode}")).toBeDefined();
+  });
+
+  test("scalar properties still group correctly", () => {
+    const byCurrency = countryCodes.customGroupedList(
+      "currencyCode",
+      "{countryCode}"
+    );
+    expect(byCurrency["JPY"]).toEqual(["JP"]);
+  });
+});
