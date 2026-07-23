@@ -510,7 +510,7 @@ const countriesData: CountryData[] = [
     officialLanguageNameLocal: "Nederlands, Vlaams",
     countryCallingCode: "5997",
     areaCodes: [],
-    region: "Unknown",
+    region: "South/Latin America",
     flag: "🇧🇶",
   },
   {
@@ -841,7 +841,7 @@ const countriesData: CountryData[] = [
     officialLanguageNameLocal: "Nederlands, Vlaams",
     countryCallingCode: "599",
     areaCodes: [],
-    region: "Unknown",
+    region: "South/Latin America",
     flag: "🇨🇼",
   },
   {
@@ -3207,7 +3207,7 @@ const countriesData: CountryData[] = [
     officialLanguageNameLocal: "Nederlands, Vlaams",
     countryCallingCode: "1721",
     areaCodes: [],
-    region: "Unknown",
+    region: "South/Latin America",
     flag: "🇸🇽",
   },
   {
@@ -4313,22 +4313,6 @@ const countriesData: CountryData[] = [
     countryCallingCode: "383",
     region: "Europe",
     flag: "🇽🇰",
-  },
-  {
-    countryNameEn: "Netherlands Antilles",
-    countryNameLocal: "Nederlandse Antillen",
-    countryCode: "AN",
-    countryCodeAlpha3: "ANT",
-    currencyCode: "ANG",
-    currencyNameEn: "Netherlands Antillean guilder",
-    tinType: "",
-    tinName: "",
-    officialLanguageCode: "nl",
-    officialLanguageNameEn: "Dutch, Flemish",
-    officialLanguageNameLocal: "Nederlands, Vlaams",
-    countryCallingCode: "599",
-    region: "Europe",
-    flag: "🇧🇶",
   },
 ];
 
