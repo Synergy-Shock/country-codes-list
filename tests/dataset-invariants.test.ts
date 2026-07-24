@@ -246,9 +246,12 @@ const KNOWN_GAPS_EMPTY_FIELD: Partial<
   // at all (see `currencyCode` above), so no name either.
   currencyNameEn: ["AQ", "BO", "BY", "GS", "MR", "PS", "ST", "VE"],
 
-  // The eight countries whose officialLanguageCode is not a plain ISO 639-1
-  // code (see KNOWN_GAPS_LANGUAGE_CODE below) never received language names
-  // either.
+  // Nine countries have an officialLanguageCode that isn't a plain ISO 639-1
+  // code: six are recorded in KNOWN_GAPS_LANGUAGE_CODE below (CN, HK, MO, SG,
+  // TW, ME) and three are declared ISO 639-3 fallbacks above (MU, NU, TK).
+  // Eight of those nine never received a language name either — the
+  // exception is ME, whose local name landed in the English field instead
+  // (see KNOWN_GAPS_NON_LATIN_LANGUAGE_NAME).
   officialLanguageNameEn: ["CN", "HK", "MO", "MU", "NU", "SG", "TK", "TW"],
 
   // Same eight as officialLanguageNameEn, plus ME, whose local name ended up
