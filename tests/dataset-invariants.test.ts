@@ -20,8 +20,9 @@ import type { CountryData, CountryScalarProperty } from "../src/index";
  *   - fixing a country without deleting it from the allowlist *also* fails
  *     (the ledger cannot silently rot).
  *
- * So the lists can only ever shrink, and every entry names the audit finding it
- * came from (see `docs/architecture/repo-quality-audit-2026-07-23.md`).
+ * So the lists can only ever shrink, and every entry carries its own inline
+ * justification — why the gap exists and why it's still open — so the ledger
+ * is readable without any external document.
  *
  * ## Reference data
  *
@@ -35,8 +36,8 @@ import type { CountryData, CountryScalarProperty } from "../src/index";
 
 const all: CountryData[] = countryCodes.all();
 
-// `all()` currently returns the live module array (audit S2), so nothing in
-// this file may mutate it. Always copy before sorting.
+// `all()` currently returns the live module array rather than a defensive
+// copy, so nothing in this file may mutate it. Always copy before sorting.
 const sorted = (values: readonly string[]): string[] => [...values].sort();
 
 /** Ratchet: the allowlist must be exactly the violators, never a superset. */
@@ -230,26 +231,28 @@ const REQUIRED_STRING_FIELDS: readonly CountryScalarProperty[] = [
 const KNOWN_GAPS_EMPTY_FIELD: Partial<
   Record<CountryScalarProperty, readonly string[]>
 > = {
-  // S11 — the local-language name was never supplied.
+  // The local-language name was never supplied for these four records.
   countryNameLocal: ["MV", "MY", "NP", "UZ"],
 
-  // S12 — ISO 4217 assigns nothing to these territories: the register records
+  // ISO 4217 assigns nothing to these territories: the register records
   // "No universal currency" for AQ and GS and has no row at all for PS. GS is
   // still an inconsistency (every other uninhabited dependency carries the
   // administering power's currency: BV→NOK, HM→AUD, TF→EUR, IO→USD).
   currencyCode: ["AQ", "GS", "PS"],
 
-  // S6 — BO, BY, MR, ST and VE had their currency *code* corrected by earlier
+  // BO, BY, MR, ST and VE had their currency *code* corrected by earlier
   // sweeps (issues #53, #54, #6 and the MRO→MRU / STD→STN redenominations) and
-  // the *name* was blanked instead of updated.
-  // S12 — AQ, GS and PS have no currency at all, so no name either.
+  // the *name* was blanked instead of updated. AQ, GS and PS have no currency
+  // at all (see `currencyCode` above), so no name either.
   currencyNameEn: ["AQ", "BO", "BY", "GS", "MR", "PS", "ST", "VE"],
 
-  // S7 — the nine countries whose officialLanguageCode is not a plain ISO
-  // 639-1 code never received language names either.
+  // The eight countries whose officialLanguageCode is not a plain ISO 639-1
+  // code (see KNOWN_GAPS_LANGUAGE_CODE below) never received language names
+  // either.
   officialLanguageNameEn: ["CN", "HK", "MO", "MU", "NU", "SG", "TK", "TW"],
 
-  // S7, plus S8 for ME, whose local name ended up in the English field.
+  // Same eight as officialLanguageNameEn, plus ME, whose local name ended up
+  // in the English field instead (see KNOWN_GAPS_NON_LATIN_LANGUAGE_NAME).
   officialLanguageNameLocal: [
     "CN",
     "HK",
@@ -276,7 +279,7 @@ const ISO_639_3_FALLBACKS: Readonly<Record<string, string>> = {
 };
 
 /**
- * S7 — `officialLanguageCode` values that are not ISO 639 codes at all, or that
+ * `officialLanguageCode` values that are not ISO 639 codes at all, or that
  * ignore an existing ISO 639-1 code.
  *
  * `zh-hans` / `zh-hant` are BCP 47 tags: ISO 639-1 `zh` plus an ISO **15924**
@@ -295,9 +298,11 @@ const KNOWN_GAPS_LANGUAGE_CODE: Readonly<Record<string, string>> = {
 };
 
 /**
- * S3 — countries whose `region` is outside the documented taxonomy. The value
- * is pinned as well as the country, so renaming a bad region to another bad
- * region also fails.
+ * Countries whose `region` is outside the documented taxonomy (the README's
+ * six-value ITU / Wikimedia classification, see `REGION_TAXONOMY` above) —
+ * mostly ocean/sea names or continent names used in place of one of the six.
+ * The value is pinned as well as the country, so renaming a bad region to
+ * another bad region also fails.
  */
 const KNOWN_GAPS_REGION: Readonly<Record<string, string>> = {
   BS: "Caribbean",
@@ -318,16 +323,28 @@ const KNOWN_GAPS_REGION: Readonly<Record<string, string>> = {
 };
 
 /**
- * S14 — currency codes that map to more than one `currencyNameEn`:
+ * Currency codes that map to more than one `currencyNameEn`, and the exact
+ * set of names each one is split across today:
  *   DKK — "Danish krone" (DK, GL) vs "Faroese króna" (FO)
- *   USD — "United States dollar" (15) vs "United States Dollar" (IO)
- *   XAF — "CFA franc BEAC" (5) vs "Central African CFA" (CF)
+ *   USD — "United States dollar" (15 countries) vs "United States Dollar",
+ *         capital D (IO)
+ *   XAF — "CFA franc BEAC" (CM, GA, GQ, TD, CG) vs "Central African CFA" (CF)
+ *
+ * Unlike `KNOWN_GAPS_REGION` this is keyed by currency code rather than
+ * country code, since the split is a property of the code, not of any one
+ * record — the ledger pins the pair of names so fixing one side without the
+ * other still fails.
  */
-const KNOWN_GAPS_CURRENCY_NAME_SPLIT: readonly string[] = ["DKK", "USD", "XAF"];
+const KNOWN_GAPS_CURRENCY_NAME_SPLIT: Readonly<Record<string, readonly string[]>> = {
+  DKK: ["Danish krone", "Faroese króna"],
+  USD: ["United States dollar", "United States Dollar"],
+  XAF: ["CFA franc BEAC", "Central African CFA"],
+};
 
 /**
- * S8 — `officialLanguageNameEn` written in a non-Latin script, i.e. the local
- * name landed in the English field.
+ * `officialLanguageNameEn` written in a non-Latin script, i.e. the local
+ * name landed in the English field. Currently just Montenegro, whose
+ * `officialLanguageNameLocal` gap above is the same underlying mix-up.
  */
 const KNOWN_GAPS_NON_LATIN_LANGUAGE_NAME: readonly string[] = ["ME"];
 
@@ -468,9 +485,18 @@ describe("required string fields are populated", () => {
   });
 
   test("no string field carries leading or trailing whitespace", () => {
+    // Unlike the emptiness checks above, this loop also covers `tinType` and
+    // `tinName` even though they're excluded from REQUIRED_STRING_FIELDS.
+    // Being empty is legitimate for them (no VAT/TIN scheme recorded); having
+    // stray whitespace never is, so it's still worth asserting here.
+    const WHITESPACE_CHECKED_FIELDS: readonly CountryScalarProperty[] = [
+      ...REQUIRED_STRING_FIELDS,
+      "tinType",
+      "tinName",
+    ];
     const offenders: string[] = [];
     all.forEach((c) =>
-      REQUIRED_STRING_FIELDS.forEach((field) => {
+      WHITESPACE_CHECKED_FIELDS.forEach((field) => {
         if (c[field] !== c[field].trim())
           offenders.push(`${c.countryCode}.${field}`);
       })
@@ -501,7 +527,7 @@ describe("currencyCode is valid ISO 4217", () => {
     expect(offenders).toEqual([]);
   });
 
-  test("a currency code maps to exactly one currency name", () => {
+  const namesByCurrencyCode = (): Map<string, Set<string>> => {
     const namesByCode = new Map<string, Set<string>>();
     all.forEach((c) => {
       if (c.currencyCode === "") return;
@@ -509,11 +535,24 @@ describe("currencyCode is valid ISO 4217", () => {
       names.add(c.currencyNameEn);
       namesByCode.set(c.currencyCode, names);
     });
+    return namesByCode;
+  };
+
+  test("a currency code maps to exactly one currency name, except the known gaps", () => {
+    const namesByCode = namesByCurrencyCode();
     const split: string[] = [];
     namesByCode.forEach((names, code) => {
       if (names.size > 1) split.push(code);
     });
-    expectExactly(split, KNOWN_GAPS_CURRENCY_NAME_SPLIT);
+    expectExactly(split, Object.keys(KNOWN_GAPS_CURRENCY_NAME_SPLIT));
+  });
+
+  test("the split currency names are exactly the ones recorded", () => {
+    const namesByCode = namesByCurrencyCode();
+    Object.entries(KNOWN_GAPS_CURRENCY_NAME_SPLIT).forEach(([code, expectedNames]) => {
+      const actualNames = Array.from(namesByCode.get(code) ?? new Set<string>());
+      expect(sorted(actualNames)).toEqual(sorted(expectedNames));
+    });
   });
 });
 
