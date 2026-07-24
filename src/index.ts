@@ -12,10 +12,26 @@ export const utils = {
   groupBy,
 };
 
+/**
+ * Every country in the dataset, in dataset order.
+ *
+ * Returns a fresh array each call, so reordering or resizing it is safe — the
+ * dataset is module state shared by every export, and handing out a live
+ * reference let one consumer's `sort()` or `push()` change what every later
+ * call returned. The country objects themselves are still shared: treat them
+ * as read-only.
+ */
 export function all(): CountryData[] {
-  return countriesData;
+  return [...countriesData];
 }
 
+/**
+ * Countries whose `countryProperty` matches `value` exactly.
+ *
+ * Returns a fresh array each call, but the country objects inside it are live
+ * references into the shared dataset — they are not copied; treat them as
+ * read-only.
+ */
 export function filter(
   countryProperty: CountryScalarProperty,
   value: string
@@ -25,6 +41,13 @@ export function filter(
   );
 }
 
+/**
+ * The first country whose `countryProperty` matches `value` exactly, in
+ * dataset order.
+ *
+ * Returns a live reference into the shared dataset — the country object is
+ * not copied; treat it as read-only.
+ */
 export function findOne(
   countryProperty: CountryScalarProperty,
   value: string
@@ -45,6 +68,9 @@ export function findOne(
  *
  * Official codes always win: no country's `altCodes` may shadow another
  * country's `countryCode` or `countryCodeAlpha3`.
+ *
+ * Returns a live reference into the shared dataset — the country object is
+ * not copied; treat it as read-only.
  *
  * @example
  * findOneByCode("UK")?.countryCode; // -> "GB"
@@ -94,7 +120,10 @@ export function customArray(
 
   if (sortDataBy) {
     const collator = new Intl.Collator([], { sensitivity: "accent" });
-    data.sort((a: CountryData, b: CountryData) =>
+    // Copy before sorting: without a `filter`, `data` still aliases
+    // `countriesData`, and an in-place sort would permanently reorder the
+    // dataset for `all`, `customList` and `customGroupedList` too.
+    data = [...data].sort((a: CountryData, b: CountryData) =>
       collator.compare(a[sortDataBy] as string, b[sortDataBy] as string)
     );
   }
