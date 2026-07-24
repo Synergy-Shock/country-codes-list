@@ -49,11 +49,33 @@ describe("altCodes data", () => {
 });
 
 describe("altCodes admission policy (issue #38)", () => {
-  // The rule for adding a 2-letter code to a country's `altCodes`. Documented
-  // in docs/architecture/issue-38-worldbase-codes.md (P1–P6). These tests
-  // enforce the machine-checkable parts (P2, P3, P4, P5); P1 and P6 are review
-  // gates. The trigger was a request to add D&B WorldBase codes, 50% of which
-  // are another country's live ISO code — this keeps that class out for good.
+  // The rule for adding a 2-letter code to a country's `altCodes`. There is no
+  // separate architecture doc for this — the six rules (P1–P6) are stated in
+  // full below so the policy is self-contained and reviewable in this file.
+  // The trigger was a request to add D&B WorldBase codes, 50% of which are
+  // another country's live ISO code — this policy keeps that class out for
+  // good.
+  //
+  //   P1 (manual review gate) — Provenance: a proposed altCode must cite a
+  //     publicly documented standard or convention (e.g. ISO 3166-1, an EU
+  //     regulation), not a proprietary vendor scheme like D&B WorldBase. Not
+  //     automated — checked by a reviewer when the code is proposed.
+  //   P2 (automated below) — No altCode may shadow another country's official
+  //     ISO 3166-1 alpha-2 or alpha-3 code. Enforced by "altCodes never
+  //     shadow another country's official codes" in the `altCodes data`
+  //     describe block above.
+  //   P3 (automated below) — No altCode may be claimed by more than one
+  //     country. Enforced by "no alternative code is claimed by two
+  //     countries" in the `altCodes data` describe block above.
+  //   P4 (automated below) — No altCode may sit in the ISO 3166-1
+  //     user-assigned range (AA, QM–QZ, XA–XZ, ZZ), except for named,
+  //     individually-approved EU conventions.
+  //   P5 (automated below) — No altCode may reuse a formally retired or
+  //     withdrawn ISO 3166-1 alpha-2 code, whether it was withdrawn by
+  //     renaming the same entity or by reassignment to a different one.
+  //   P6 (manual review gate) — Maintainer ratification: a new altCode is not
+  //     merged until a maintainer has explicitly signed off on it in the
+  //     PR/issue, even after P1–P5 pass. Not automated.
 
   const altCodes = all.flatMap((c) => c.altCodes ?? []);
 
@@ -63,19 +85,27 @@ describe("altCodes admission policy (issue #38)", () => {
   const USER_ASSIGNED = /^(AA|Q[M-Z]|X[A-Z]|ZZ)$/;
 
   // The only codes allowed to sit in that range: published EU VAT/customs
-  // conventions, admitted by name (DECIDED 2026-07-24). Neither is in the
-  // dataset today; this set exists so that adding one later does not trip P4.
-  //   EL — European Commission VAT prefix for Greece (already carried on GR).
-  //   XI — European Commission VAT/customs code for Northern Ireland.
-  // EL is not in XA–XZ so it never reaches this test, but it is listed to keep
-  // the exception's rationale in one place.
+  // conventions, admitted by name here (proposed in this PR; pending explicit
+  // maintainer ratification per P6). This set exists so that adding one does
+  // not trip P4.
+  //   EL — European Commission VAT prefix for Greece. Already carried on GR
+  //        (see "EL is an alternative code for Greece" above and
+  //        src/countriesData.ts).
+  //   XI — European Commission VAT/customs code for Northern Ireland. Not yet
+  //        added to any country's altCodes; listed so that adding it later
+  //        does not trip P4.
+  // EL is not in XA–XZ so it never actually reaches this test, but it is
+  // listed to keep the exception's rationale in one place.
   const POLICY_EXCEPTED_USER_ASSIGNED = new Set(["EL", "XI"]);
 
-  // P5 — ISO 3166-1 alpha-2 codes that were assigned, then deleted, and that
-  // belonged to a *different* entity than any current one. Reusing them would
-  // silently corrupt legacy-data migrations, and no current test would catch
-  // it: e.g. AN→Andorra would collide with ISO's AN (Netherlands Antilles).
-  const RETIRED_ELSEWHERE = [
+  // P5 — ISO 3166-1 alpha-2 codes that were formally reserved, then withdrawn
+  // — whether by renaming the same entity (e.g. BU: Upper Volta → Burkina
+  // Faso) or by reassignment to a different one (e.g. AN: Netherlands
+  // Antilles, later informally associated with Andorra) — and that must never
+  // be reintroduced as an altCode for any current country. Reusing one would
+  // silently corrupt legacy-data migrations, and no other test here would
+  // catch it.
+  const RETIRED_ISO_CODES = [
     "AN", "BU", "CS", "DD", "NT", "SU", "TP", "YD", "YU", "ZR",
   ];
 
@@ -86,8 +116,8 @@ describe("altCodes admission policy (issue #38)", () => {
     expect(offenders).toEqual([]);
   });
 
-  test("P5 — no altCode reuses a deleted ISO code that belonged to another entity", () => {
-    const offenders = altCodes.filter((alt) => RETIRED_ELSEWHERE.includes(alt));
+  test("P5 — no altCode reuses a formally retired/withdrawn ISO code", () => {
+    const offenders = altCodes.filter((alt) => RETIRED_ISO_CODES.includes(alt));
     expect(offenders).toEqual([]);
   });
 
@@ -101,21 +131,28 @@ describe("altCodes admission policy (issue #38)", () => {
     });
   });
 
-  test("the WorldBase codes that collide with a live ISO alpha-2 never resolve to the wrong country", () => {
+  test("the WorldBase codes that collide with a live ISO alpha-2 are never admitted as an altCode", () => {
     // A sample of D&B WorldBase codes whose letters are another country's
-    // official ISO alpha-2. If any were ever added as an altCode, P2 would
-    // already fail; this asserts the user-visible symptom stays correct.
-    const collisions: Record<string, string> = {
+    // official ISO alpha-2 (the code key below is the live ISO owner; the
+    // value is the country WorldBase actually means by that same string).
+    // This asserts the data itself, not resolution order: `findOneByCode`
+    // already checks official codes before altCodes (see "official codes
+    // take precedence over alternative codes" below and "altCodes never
+    // shadow another country's official codes" above), so a resolution-based
+    // assertion here could never fail even if one of these codes were
+    // literally added to some country's `altCodes`. Checking the data
+    // directly is what actually catches that mistake.
+    const worldbaseCollisions: Record<string, string> = {
       SA: "ZA", // WorldBase South Africa vs ISO Saudi Arabia
       ZA: "ZM", // WorldBase Zambia vs ISO South Africa
       GB: "GM", // WorldBase Gambia vs ISO United Kingdom
       BG: "BZ", // WorldBase Belize vs ISO Bulgaria
     };
-    Object.entries(collisions).forEach(([code, worldbaseMeans]) => {
-      const resolved = countryCodes.findOneByCode(code);
-      // The code resolves to its ISO owner, never to what WorldBase meant.
-      expect(resolved?.countryCode).toBe(code);
-      expect(resolved?.countryCode).not.toBe(worldbaseMeans);
+    Object.keys(worldbaseCollisions).forEach((worldbaseCode) => {
+      const offenders = all.filter((c) =>
+        (c.altCodes ?? []).includes(worldbaseCode)
+      );
+      expect(offenders).toEqual([]);
     });
   });
 });
