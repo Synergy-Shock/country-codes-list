@@ -3,11 +3,12 @@
 Module with list of codes per country, including country codes, currency codes, and more.
 
 > [!WARNING]
-> Unreleased: `all()` now returns a new array on every call instead of a live reference into the shared dataset, so `all() === all()` is no longer `true`. Sorting or mutating the array returned by `all()` (or by `customArray({ sortDataBy })`) no longer reorders or corrupts the data seen by `filter`, `findOne`, `customList` and every other consumer — that reordering/corruption was the bug this release fixes. If your code relied on reference equality between calls to `all()`, compare contents instead.
->
 > Release v3.0.0 introduces breaking changes: `countryCallingCode` no longer folds in national area codes, `areaCodes` is now a required `string[]`, and several functions narrow their key parameter to string-valued properties. See the [v2 → v3 migration guide](#migration-guide-v2x-to-v30).
 >
 > Release v2.0.0 introduced breaking changes with full TypeScript support and automated testing/publishing.
+
+> [!NOTE]
+> v3.1.1 fixes a bug where the public API could mutate the shared dataset. `all()` now returns a fresh array on every call (so `all() === all()` is no longer `true`), and sorting or mutating that array — or the one from `customArray({ sortDataBy })` — no longer reorders or corrupts the data seen by `filter`, `findOne`, `customList` and every other consumer. If your code relied on reference equality between calls to `all()`, compare contents instead.
 
 ## Features
 
