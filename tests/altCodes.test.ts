@@ -48,6 +48,78 @@ describe("altCodes data", () => {
   });
 });
 
+describe("altCodes admission policy (issue #38)", () => {
+  // The rule for adding a 2-letter code to a country's `altCodes`. Documented
+  // in docs/architecture/issue-38-worldbase-codes.md (P1–P6). These tests
+  // enforce the machine-checkable parts (P2, P3, P4, P5); P1 and P6 are review
+  // gates. The trigger was a request to add D&B WorldBase codes, 50% of which
+  // are another country's live ISO code — this keeps that class out for good.
+
+  const altCodes = all.flatMap((c) => c.altCodes ?? []);
+
+  // P4 — the ISO 3166-1 user-assigned series (ISO 3166-1 §8.1.3): AA, QM–QZ,
+  // XA–XZ, ZZ. These "are not universal ... not compatible between different
+  // entities", so they must never resolve to a specific country.
+  const USER_ASSIGNED = /^(AA|Q[M-Z]|X[A-Z]|ZZ)$/;
+
+  // The only codes allowed to sit in that range: published EU VAT/customs
+  // conventions, admitted by name (DECIDED 2026-07-24). Neither is in the
+  // dataset today; this set exists so that adding one later does not trip P4.
+  //   EL — European Commission VAT prefix for Greece (already carried on GR).
+  //   XI — European Commission VAT/customs code for Northern Ireland.
+  // EL is not in XA–XZ so it never reaches this test, but it is listed to keep
+  // the exception's rationale in one place.
+  const POLICY_EXCEPTED_USER_ASSIGNED = new Set(["EL", "XI"]);
+
+  // P5 — ISO 3166-1 alpha-2 codes that were assigned, then deleted, and that
+  // belonged to a *different* entity than any current one. Reusing them would
+  // silently corrupt legacy-data migrations, and no current test would catch
+  // it: e.g. AN→Andorra would collide with ISO's AN (Netherlands Antilles).
+  const RETIRED_ELSEWHERE = [
+    "AN", "BU", "CS", "DD", "NT", "SU", "TP", "YD", "YU", "ZR",
+  ];
+
+  test("P4 — no altCode sits in the ISO user-assigned range, except named EU conventions", () => {
+    const offenders = altCodes.filter(
+      (alt) => USER_ASSIGNED.test(alt) && !POLICY_EXCEPTED_USER_ASSIGNED.has(alt)
+    );
+    expect(offenders).toEqual([]);
+  });
+
+  test("P5 — no altCode reuses a deleted ISO code that belonged to another entity", () => {
+    const offenders = altCodes.filter((alt) => RETIRED_ELSEWHERE.includes(alt));
+    expect(offenders).toEqual([]);
+  });
+
+  test("user-assigned, pseudo and unknown region codes do not resolve to a country", () => {
+    // The concrete codes behind issue #38: XA/XB are CLDR pseudo-locale
+    // regions; XM/QO/AA/QZ/ZZ are user-assigned; none denotes a country.
+    // XI is deliberately absent — it is admissible by policy and may resolve
+    // once it is actually added to GB's altCodes.
+    ["XA", "XB", "XM", "QO", "AA", "QZ", "ZZ"].forEach((code) => {
+      expect(countryCodes.findOneByCode(code)).toBeUndefined();
+    });
+  });
+
+  test("the WorldBase codes that collide with a live ISO alpha-2 never resolve to the wrong country", () => {
+    // A sample of D&B WorldBase codes whose letters are another country's
+    // official ISO alpha-2. If any were ever added as an altCode, P2 would
+    // already fail; this asserts the user-visible symptom stays correct.
+    const collisions: Record<string, string> = {
+      SA: "ZA", // WorldBase South Africa vs ISO Saudi Arabia
+      ZA: "ZM", // WorldBase Zambia vs ISO South Africa
+      GB: "GM", // WorldBase Gambia vs ISO United Kingdom
+      BG: "BZ", // WorldBase Belize vs ISO Bulgaria
+    };
+    Object.entries(collisions).forEach(([code, worldbaseMeans]) => {
+      const resolved = countryCodes.findOneByCode(code);
+      // The code resolves to its ISO owner, never to what WorldBase meant.
+      expect(resolved?.countryCode).toBe(code);
+      expect(resolved?.countryCode).not.toBe(worldbaseMeans);
+    });
+  });
+});
+
 describe("findOneByCode", () => {
   test("resolves UK to the United Kingdom", () => {
     expect(countryCodes.findOneByCode("UK")?.countryCode).toBe("GB");
