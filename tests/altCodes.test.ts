@@ -98,13 +98,13 @@ describe("altCodes admission policy (issue #38)", () => {
   // listed to keep the exception's rationale in one place.
   const POLICY_EXCEPTED_USER_ASSIGNED = new Set(["EL", "XI"]);
 
-  // P5 — ISO 3166-1 alpha-2 codes that were formally reserved, then withdrawn
-  // — whether by renaming the same entity (e.g. BU: Upper Volta → Burkina
-  // Faso) or by reassignment to a different one (e.g. AN: Netherlands
-  // Antilles, later informally associated with Andorra) — and that must never
-  // be reintroduced as an altCode for any current country. Reusing one would
-  // silently corrupt legacy-data migrations, and no other test here would
-  // catch it.
+  // P5 — ISO 3166-1 alpha-2 codes no longer assigned to any current country.
+  // Most were formally withdrawn; SU remains exceptionally reserved rather
+  // than withdrawn. Either way, none may be reintroduced as an altCode —
+  // whether by renaming the same entity (e.g. BU: Burma → Myanmar, 1989) or
+  // by reassignment to a different one (e.g. CS: Czechoslovakia until 1993,
+  // reused for Serbia and Montenegro 2003–2006). Reusing one would silently
+  // corrupt legacy-data migrations, and no other test here would catch it.
   const RETIRED_ISO_CODES = [
     "AN", "BU", "CS", "DD", "NT", "SU", "TP", "YD", "YU", "ZR",
   ];
