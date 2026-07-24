@@ -25,6 +25,13 @@ export function all(): CountryData[] {
   return [...countriesData];
 }
 
+/**
+ * Countries whose `countryProperty` matches `value` exactly.
+ *
+ * Returns a fresh array each call, but the country objects inside it are live
+ * references into the shared dataset — they are not copied; treat them as
+ * read-only.
+ */
 export function filter(
   countryProperty: CountryScalarProperty,
   value: string
@@ -34,6 +41,13 @@ export function filter(
   );
 }
 
+/**
+ * The first country whose `countryProperty` matches `value` exactly, in
+ * dataset order.
+ *
+ * Returns a live reference into the shared dataset — the country object is
+ * not copied; treat it as read-only.
+ */
 export function findOne(
   countryProperty: CountryScalarProperty,
   value: string
@@ -54,6 +68,9 @@ export function findOne(
  *
  * Official codes always win: no country's `altCodes` may shadow another
  * country's `countryCode` or `countryCodeAlpha3`.
+ *
+ * Returns a live reference into the shared dataset — the country object is
+ * not copied; treat it as read-only.
  *
  * @example
  * findOneByCode("UK")?.countryCode; // -> "GB"
