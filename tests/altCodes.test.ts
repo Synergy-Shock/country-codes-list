@@ -276,14 +276,20 @@ describe("findOne is unchanged", () => {
 
 describe("array-valued properties are not accepted as lookup keys", () => {
   // These are compile-time assertions: if any of these calls ever type-checks,
-  // tsc fails the build with "Unused '@ts-expect-error' directive".
-  test("filter, findOne and customList reject altCodes and areaCodes", () => {
+  // ts-jest fails `npm test` with "Unused '@ts-expect-error' directive".
+  // (`npm run build` cannot catch it — tsconfig's `include` is `src/**/*`, so
+  // tsc never sees this file.)
+  test("filter, findOne and customList reject the array-valued fields", () => {
     // @ts-expect-error altCodes holds an array, so === can never match
     expect(countryCodes.filter("altCodes", "UK")).toEqual([]);
     // @ts-expect-error same for findOne
     expect(countryCodes.findOne("altCodes", "UK")).toBeUndefined();
     // @ts-expect-error areaCodes has the same problem
     expect(countryCodes.findOne("areaCodes", "876")).toBeUndefined();
+    // @ts-expect-error nationalNumberLengths holds numbers, not a string value
+    expect(countryCodes.findOne("nationalNumberLengths", "10")).toBeUndefined();
+    // @ts-expect-error same for filter — number[] is not a CountryScalarProperty
+    expect(countryCodes.filter("nationalNumberLengths", "10")).toEqual([]);
     // @ts-expect-error keying a list on an array field collapses countries
     expect(countryCodes.customList("altCodes", "{countryCode}")).toBeDefined();
   });

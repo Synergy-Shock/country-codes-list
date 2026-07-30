@@ -12,6 +12,7 @@
     "test": "jest",
     "data:numeric": "node scripts/generate-numeric-codes.mjs",
     "data:currencies": "node scripts/generate-currencies.mjs",
+    "data:number-lengths": "node scripts/generate-national-number-lengths.mjs",
     "data:all": "npm run data:numeric && npm run data:currencies",
     "prepublishOnly": "npm run build"
   },
