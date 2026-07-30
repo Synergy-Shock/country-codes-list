@@ -351,6 +351,44 @@ const KNOWN_GAPS_CURRENCY_NAME_SPLIT: Readonly<Record<string, readonly string[]>
  */
 const KNOWN_GAPS_NON_LATIN_LANGUAGE_NAME: readonly string[] = ["ME"];
 
+/**
+ * Countries with an empty `nationalNumberLengths`. The source metadata has no
+ * territory entry for any of them, and states the reason for two: French
+ * Southern Territories is "not covered due to lack of information about its
+ * numbering plan", and Pitcairn "is not supported since evidence seems to be
+ * that the 50 inhabitants use satellite phones". The rest have no permanent
+ * population and so no civil numbering plan of their own:
+ *   AQ — Antarctica; stations dial through their operator's home country.
+ *   BV — Bouvet Island; uninhabited Norwegian dependency.
+ *   GS — South Georgia and the South Sandwich Islands.
+ *   HM — Heard Island and McDonald Islands; uninhabited.
+ *   UM — United States Minor Outlying Islands.
+ * May only shrink, and only if the upstream plan starts covering one of them.
+ */
+const KNOWN_GAPS_NO_NUMBER_LENGTHS: readonly string[] = [
+  "AQ",
+  "BV",
+  "GS",
+  "HM",
+  "PN",
+  "TF",
+  "UM",
+];
+
+/**
+ * Countries whose longest national number breaks the ITU-T E.164 §6.2 ceiling
+ * of 15 digits for calling code + national significant number. Germany is the
+ * only one: German direct-dial-in extensions are appended to the subscriber
+ * number with no length limit, so fixed-line numbers run to 15 national digits,
+ * which with the two-digit `49` totals 17. That is the numbering plan as
+ * published, not a transcription error — pinned by value so a drift to a
+ * *different* over-long value also fails.
+ */
+const KNOWN_GAPS_E164_OVERLONG: Readonly<Record<string, number>> = { DE: 15 };
+
+/** ITU-T E.164 §6.2: calling code plus national significant number. */
+const E164_MAX_DIGITS = 15;
+
 // ---------------------------------------------------------------------------
 
 describe("code uniqueness", () => {
@@ -628,6 +666,95 @@ describe("countryCallingCode is an ITU-T E.164 country code", () => {
           offenders.push(`${c.countryCode}: areaCode repeats callingCode`);
       })
     );
+    expect(offenders).toEqual([]);
+  });
+});
+
+describe("nationalNumberLengths", () => {
+  test("every country carries an array", () => {
+    const offenders = all
+      .filter((c) => !Array.isArray(c.nationalNumberLengths))
+      .map((c) => c.countryCode);
+    expect(offenders).toEqual([]);
+  });
+
+  test("every value is a positive integer", () => {
+    const offenders: string[] = [];
+    all.forEach((c) =>
+      c.nationalNumberLengths.forEach((n) => {
+        if (!Number.isInteger(n) || n <= 0)
+          offenders.push(`${c.countryCode}:${n}`);
+      })
+    );
+    expect(offenders).toEqual([]);
+  });
+
+  /** Strictly ascending proves sorted *and* de-duplicated in one assertion. */
+  test("values are strictly ascending", () => {
+    const offenders = all
+      .filter((c) =>
+        c.nationalNumberLengths.some((n, i) => i > 0 && n <= c.nationalNumberLengths[i - 1])
+      )
+      .map((c) => `${c.countryCode}=[${c.nationalNumberLengths}]`);
+    expect(offenders).toEqual([]);
+  });
+
+  test("no single length exceeds the E.164 ceiling", () => {
+    const offenders = all
+      .filter((c) => c.nationalNumberLengths.some((n) => n > E164_MAX_DIGITS))
+      .map((c) => `${c.countryCode}=[${c.nationalNumberLengths}]`);
+    expect(offenders).toEqual([]);
+  });
+
+  test("calling code + longest number fits E.164, except the known gaps", () => {
+    const violators = all
+      .filter(
+        (c) =>
+          c.nationalNumberLengths.length > 0 &&
+          c.countryCallingCode.length + Math.max(...c.nationalNumberLengths) >
+            E164_MAX_DIGITS
+      )
+      .map((c) => c.countryCode);
+    expectExactly(violators, Object.keys(KNOWN_GAPS_E164_OVERLONG));
+  });
+
+  test("the over-long values are exactly the ones recorded", () => {
+    const actual: Record<string, number> = {};
+    all.forEach((c) => {
+      if (
+        c.nationalNumberLengths.length > 0 &&
+        c.countryCallingCode.length + Math.max(...c.nationalNumberLengths) >
+          E164_MAX_DIGITS
+      ) {
+        actual[c.countryCode] = Math.max(...c.nationalNumberLengths);
+      }
+    });
+    expect(actual).toEqual(KNOWN_GAPS_E164_OVERLONG);
+  });
+
+  test("the empty arrays are exactly the known gaps", () => {
+    const violators = all
+      .filter((c) => c.nationalNumberLengths.length === 0)
+      .map((c) => c.countryCode);
+    expectExactly(violators, KNOWN_GAPS_NO_NUMBER_LENGTHS);
+  });
+
+  /**
+   * The area code is part of the national significant number, so the shortest
+   * number must still leave room for at least one subscriber digit after the
+   * longest area code. This is the only invariant tying the two array fields
+   * together, and it is what would catch a country mapped to the wrong
+   * numbering plan.
+   */
+  test("every length leaves room for the country's own area codes", () => {
+    const offenders = all
+      .filter((c) => c.areaCodes.length > 0 && c.nationalNumberLengths.length > 0)
+      .filter(
+        (c) =>
+          Math.min(...c.nationalNumberLengths) <=
+          Math.max(...c.areaCodes.map((a) => a.length))
+      )
+      .map((c) => `${c.countryCode}=[${c.nationalNumberLengths}]`);
     expect(offenders).toEqual([]);
   });
 });

@@ -10,6 +10,7 @@
   "scripts": {
     "build": "tsc",
     "test": "jest",
+    "data:number-lengths": "node scripts/generate-national-number-lengths.mjs",
     "prepublishOnly": "npm run build"
   },
   "repository": {
