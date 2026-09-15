@@ -14,10 +14,14 @@ Module with list of codes per country, including country codes, currency codes, 
 
 - 2 digit country code (ISO 3166-1 alpha-2): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
 - 3 digit country code (ISO 3166-1 alpha-3): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3)
+- Numeric country code (`countryCodeNumeric`, ISO 3166-1 numeric): three digits with leading zeros kept (`"004"` for Afghanistan, `"840"` for the United States), empty only for Kosovo (`XK`), which has no ISO assignment. Resolve one with [`findOneByCode("840")`](#api-details--findonebycode-method)
 - Alternative country codes (`altCodes`): non-primary 2-letter codes that still identify a country in the wild — `UK` for the United Kingdom (whose ISO code is `GB`) and `EL` for Greece (whose ISO code is `GR`). Resolve any of them with [`findOneByCode`](#api-details--findonebycode-method)
 - Country Name: Each name in english and in the local country language
 - Currency Code (ISO 4217): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/ISO_4217)
 - Currency Name (ISO 4217): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/ISO_4217)
+- Currency Numeric (`currencyNumeric`, ISO 4217 numeric): three digits (`"840"` for USD, `"978"` for EUR), empty when the country has no currency. From the ISO 4217 maintenance agency's [List One](https://www.six-group.com/en/products-services/financial-information/data-standards.html)
+- Currency Decimals (`currencyDecimals`, ISO 4217 minor units): `2` for most currencies, `0` for JPY or XOF, `3` for BHD or KWD; `null` when there is no currency. Same source as above
+- Currency Symbol (`currencySymbol`): the CLDR English narrow symbol — `"$"`, `"€"`, `"£"`, `"R$"`, `"₹"` — from Node's built-in ICU. Narrow means **not disambiguated**: USD, CAD and AUD all render as `"$"`. Falls back to the ISO code when CLDR has no symbol (`"CHF"`, `"ZWG"`); empty when there is no currency
 - TIN Code (Taxpayer Identification Number, also known as VAT in some countries): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/VAT_identification_number)
 - TIN Name: Obtained from [Wikipedia](https://en.wikipedia.org/wiki/VAT_identification_number)
 - Official language code (usually from ISO 639-1, or ISO 639-3 otherwise)): Obtained from [Open Street Map](https://wiki.openstreetmap.org/wiki/Nominatim/Country_Codes). Returns only the first official language code per country
@@ -165,7 +169,15 @@ countryCodes.findOneByCode("EL").countryCode; // 'GR'
 countryCodes.findOneByCode("ZZ"); // undefined
 ```
 
-Input is trimmed and must be 2 or 3 ASCII letters; anything else returns `undefined`. The validation happens *before* uppercasing on purpose — Unicode case mapping turns `"ß"` into `"SS"` and `"ı"` into `"I"`, so validating afterwards would let junk input resolve to real countries.
+It also resolves ISO 3166-1 **numeric** codes — a string of exactly three ASCII digits, leading zeros included, as they appear in `countryCodeNumeric`:
+
+```js
+countryCodes.findOneByCode("840").countryCode; // 'US'
+countryCodes.findOneByCode("004").countryCode; // 'AF'
+countryCodes.findOneByCode("4"); // undefined — must be zero-padded
+```
+
+Input is trimmed and must be 2 or 3 ASCII letters (or 3 ASCII digits for a numeric code); anything else returns `undefined`. The validation happens *before* uppercasing on purpose — Unicode case mapping turns `"ß"` into `"SS"` and `"ı"` into `"I"`, so validating afterwards would let junk input resolve to real countries.
 
 Note that `altCodes`, `areaCodes` and `nationalNumberLengths` hold arrays, so they can't be used as lookup or list keys. `filter`, `findOne` and `customList` accept only string-valued properties (the exported `CountryScalarProperty` type); reach for `findOneByCode` to search `altCodes`.
 
@@ -222,6 +234,10 @@ The available placeholders are:
 - `countryCallingCode`
 - `region`
 - `flag`
+- `countryCodeNumeric`
+- `currencyNumeric`
+- `currencyDecimals` (a number; left verbatim for the three records where it is `null`)
+- `currencySymbol`
 
 `altCodes`, `areaCodes` and `nationalNumberLengths` hold arrays and are **not** substitutable — `{nationalNumberLengths}` is left in the output verbatim. They are also rejected as the list key, which is a compile-time error in TypeScript (see `CountryScalarProperty`).
 
@@ -310,3 +326,25 @@ const byRegion = countryCodes.customGroupedList("region", "{countryCode}", {
 byRegion["Europe"]; // undefined — no European country passed the filter
 byRegion["Europe"]?.length ?? 0; // 0
 ```
+
+## Data exports (JSON / CSV / CDN)
+
+The package also ships the whole dataset as plain files, for anything that isn't JavaScript — spreadsheets, Python, a SQL loader, a `<script>`-free web page:
+
+- `dist/countries.json` — the full array returned by `all()`, pretty-printed
+- `dist/countries.csv` — one row per country; the header lists every field, array fields (`altCodes`, `areaCodes`, `nationalNumberLengths`) are joined with `|`, `null` is an empty cell, and cells are quoted per RFC 4180
+
+Both are on jsDelivr, pinned to the major version:
+
+```
+https://cdn.jsdelivr.net/npm/country-codes-list@3/dist/countries.json
+https://cdn.jsdelivr.net/npm/country-codes-list@3/dist/countries.csv
+```
+
+```js
+const countries = await fetch(
+  "https://cdn.jsdelivr.net/npm/country-codes-list@3/dist/countries.json"
+).then((r) => r.json());
+```
+
+Both files are written by `npm run build`, so they always match the compiled dataset. The generated fields themselves (`countryCodeNumeric`, `currencyNumeric`, `currencyDecimals`, `currencySymbol`, `nationalNumberLengths`) are produced by the scripts under `scripts/` — `npm run data:all` regenerates them from their sources.
