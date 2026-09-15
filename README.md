@@ -335,7 +335,7 @@ CI runs the same steps on Node 22 and 24. Write PR titles and bodies in English.
 
 ### Generated fields
 
-Five fields are written by scripts, not by hand. Do not edit them manually. The scripts need network access and do not run in CI.
+Five fields are written by scripts, not by hand. Do not edit them manually. The currency and number-length scripts need network access. No script runs in CI.
 
 | Command | Fields | Source |
 | --- | --- | --- |

@@ -160,7 +160,7 @@ Generated fields sit at the end of each record, after `flag`, in a fixed order (
 
 Rules for the generators:
 
-- They need network access and never run in CI.
+- The currency and number-length generators need network access. No generator runs in CI.
 - Each one rewrites only its own field lines in `src/countriesData.ts`. A second run produces no diff.
 - `--check` is a dry run that exits with code 1 on drift.
 - If you change `currencyCode` by hand, run `npm run data:currencies` afterwards so the derived fields follow.
