@@ -63,3 +63,5 @@ typings/
 dist/
 # Local scratch / analysis files (not published, not tracked)
 .scratch/
+# Claude Code local state (agent worktrees, settings)
+.claude/
