@@ -59,9 +59,10 @@
   "homepage": "https://github.com/Synergy-Shock/country-codes-list#readme",
   "devDependencies": {
     "@types/jest": "^30.0.0",
+    "@types/node": "^22.0.0",
     "jest": "^30.0.0",
     "ts-jest": "^29.4.0",
-    "typescript": "^5.9.0"
+    "typescript": "^6.0.0"
   },
   "jest": {
     "preset": "ts-jest",
