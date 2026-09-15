@@ -36,8 +36,8 @@ import type { CountryData, CountryScalarProperty } from "../src/index";
 
 const all: CountryData[] = countryCodes.all();
 
-// `all()` currently returns the live module array rather than a defensive
-// copy, so nothing in this file may mutate it. Always copy before sorting.
+// `all()` returns a fresh array since v3.1.1, but the country objects inside
+// it are still the shared dataset, so nothing in this file may mutate them.
 const sorted = (values: readonly string[]): string[] => [...values].sort();
 
 /** Ratchet: the allowlist must be exactly the violators, never a superset. */
@@ -231,42 +231,14 @@ const REQUIRED_STRING_FIELDS: readonly CountryScalarProperty[] = [
 const KNOWN_GAPS_EMPTY_FIELD: Partial<
   Record<CountryScalarProperty, readonly string[]>
 > = {
-  // The local-language name was never supplied for these four records.
-  countryNameLocal: ["MV", "MY", "NP", "UZ"],
+  // ISO 4217 assigns nothing to Antarctica ("No universal currency"). Every
+  // other dependency without an ISO 4217 row carries the currency that
+  // actually circulates there by convention (BV→NOK, HM→AUD, TF→EUR, IO→USD,
+  // GS→GBP, PS→ILS); Antarctica has no circulating currency at all.
+  currencyCode: ["AQ"],
 
-  // ISO 4217 assigns nothing to these territories: the register records
-  // "No universal currency" for AQ and GS and has no row at all for PS. GS is
-  // still an inconsistency (every other uninhabited dependency carries the
-  // administering power's currency: BV→NOK, HM→AUD, TF→EUR, IO→USD).
-  currencyCode: ["AQ", "GS", "PS"],
-
-  // BO, BY, MR, ST and VE had their currency *code* corrected by earlier
-  // sweeps (issues #53, #54, #6 and the MRO→MRU / STD→STN redenominations) and
-  // the *name* was blanked instead of updated. AQ, GS and PS have no currency
-  // at all (see `currencyCode` above), so no name either.
-  currencyNameEn: ["AQ", "BO", "BY", "GS", "MR", "PS", "ST", "VE"],
-
-  // Nine countries have an officialLanguageCode that isn't a plain ISO 639-1
-  // code: six are recorded in KNOWN_GAPS_LANGUAGE_CODE below (CN, HK, MO, SG,
-  // TW, ME) and three are declared ISO 639-3 fallbacks above (MU, NU, TK).
-  // Eight of those nine never received a language name either — the
-  // exception is ME, whose local name landed in the English field instead
-  // (see KNOWN_GAPS_NON_LATIN_LANGUAGE_NAME).
-  officialLanguageNameEn: ["CN", "HK", "MO", "MU", "NU", "SG", "TK", "TW"],
-
-  // Same eight as officialLanguageNameEn, plus ME, whose local name ended up
-  // in the English field instead (see KNOWN_GAPS_NON_LATIN_LANGUAGE_NAME).
-  officialLanguageNameLocal: [
-    "CN",
-    "HK",
-    "ME",
-    "MO",
-    "MU",
-    "NU",
-    "SG",
-    "TK",
-    "TW",
-  ],
+  // No currency at all (see `currencyCode` above), so no name either.
+  currencyNameEn: ["AQ"],
 };
 
 /**
@@ -276,80 +248,44 @@ const KNOWN_GAPS_EMPTY_FIELD: Partial<
  * defect ledger — it is an expected-exceptions list and it may grow.
  */
 const ISO_639_3_FALLBACKS: Readonly<Record<string, string>> = {
-  MU: "mfe", // Morisyen (Mauritian Creole)
+  BF: "mos", // Mooré
+  ME: "cnr", // Montenegrin
   NU: "niu", // Niuean
   TK: "tkl", // Tokelauan
 };
 
 /**
  * `officialLanguageCode` values that are not ISO 639 codes at all, or that
- * ignore an existing ISO 639-1 code.
- *
- * `zh-hans` / `zh-hant` are BCP 47 tags: ISO 639-1 `zh` plus an ISO **15924**
- * script subtag (RFC 5646). They are also mis-cased — BCP 47 title-cases script
- * subtags. `srp` is the ISO 639-3 form of Serbian, which *does* have the
- * 639-1 code `sr` (already used for RS); Montenegro's constitutional official
- * language is Montenegrin, ISO 639-2/3 `cnr`.
+ * ignore an existing ISO 639-1 code. Empty today; a BCP 47 tag such as
+ * `zh-hans` (ISO 639-1 plus an ISO 15924 script subtag) or an ISO 639-3 code
+ * that shadows an existing 639-1 code (`srp` for `sr`) would land here.
  */
-const KNOWN_GAPS_LANGUAGE_CODE: Readonly<Record<string, string>> = {
-  CN: "zh-hans",
-  SG: "zh-hans",
-  HK: "zh-hant",
-  MO: "zh-hant",
-  TW: "zh-hant",
-  ME: "srp",
-};
+const KNOWN_GAPS_LANGUAGE_CODE: Readonly<Record<string, string>> = {};
 
 /**
  * Countries whose `region` is outside the documented taxonomy (the README's
- * six-value ITU / Wikimedia classification, see `REGION_TAXONOMY` above) —
- * mostly ocean/sea names or continent names used in place of one of the six.
- * The value is pinned as well as the country, so renaming a bad region to
- * another bad region also fails.
+ * six-value ITU / Wikimedia classification, see `REGION_TAXONOMY` above).
+ * Empty today; the value is pinned as well as the country, so renaming a bad
+ * region to another bad region also fails.
  */
-const KNOWN_GAPS_REGION: Readonly<Record<string, string>> = {
-  BS: "Caribbean",
-  CC: "Australia",
-  CK: "South Pacific Ocean",
-  FK: "South Atlantic Ocean",
-  HM: "Indian Ocean",
-  IO: "Indian Ocean",
-  KM: "Indian Ocean",
-  KP: "Asia",
-  KR: "Asia",
-  KY: "Caribbean Sea",
-  MH: "Pacific Ocean",
-  MP: "Pacific Ocean",
-  TC: "Atlantic Ocean",
-  TF: "Indian Ocean",
-  UM: "Pacific Ocean",
-};
+const KNOWN_GAPS_REGION: Readonly<Record<string, string>> = {};
 
 /**
  * Currency codes that map to more than one `currencyNameEn`, and the exact
- * set of names each one is split across today:
- *   DKK — "Danish krone" (DK, GL) vs "Faroese króna" (FO)
- *   USD — "United States dollar" (15 countries) vs "United States Dollar",
- *         capital D (IO)
- *   XAF — "CFA franc BEAC" (CM, GA, GQ, TD, CG) vs "Central African CFA" (CF)
+ * set of names each one is split across. Empty today.
  *
  * Unlike `KNOWN_GAPS_REGION` this is keyed by currency code rather than
  * country code, since the split is a property of the code, not of any one
- * record — the ledger pins the pair of names so fixing one side without the
+ * record — the ledger pins the set of names so fixing one side without the
  * other still fails.
  */
-const KNOWN_GAPS_CURRENCY_NAME_SPLIT: Readonly<Record<string, readonly string[]>> = {
-  DKK: ["Danish krone", "Faroese króna"],
-  USD: ["United States dollar", "United States Dollar"],
-  XAF: ["CFA franc BEAC", "Central African CFA"],
-};
+const KNOWN_GAPS_CURRENCY_NAME_SPLIT: Readonly<Record<string, readonly string[]>> = {};
 
 /**
  * `officialLanguageNameEn` written in a non-Latin script, i.e. the local
- * name landed in the English field. Currently just Montenegro, whose
- * `officialLanguageNameLocal` gap above is the same underlying mix-up.
+ * name landed in the English field. Empty today.
  */
-const KNOWN_GAPS_NON_LATIN_LANGUAGE_NAME: readonly string[] = ["ME"];
+const KNOWN_GAPS_NON_LATIN_LANGUAGE_NAME: readonly string[] = [];
 
 // ---------------------------------------------------------------------------
 

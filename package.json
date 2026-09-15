@@ -7,6 +7,10 @@
   "files": [
     "dist"
   ],
+  "engines": {
+    "node": ">=18"
+  },
+  "sideEffects": false,
   "scripts": {
     "build": "tsc",
     "test": "jest",
@@ -30,7 +34,18 @@
     "international",
     "i18n",
     "typescript",
-    "tin"
+    "tin",
+    "iso-3166",
+    "iso-4217",
+    "alpha-2",
+    "alpha-3",
+    "vat",
+    "e164",
+    "dial-code",
+    "flag",
+    "emoji",
+    "dataset",
+    "json"
   ],
   "author": "Luciano Andrés Ganga Carabante",
   "license": "MIT",

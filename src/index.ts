@@ -97,22 +97,31 @@ export function findOneByCode(code: string): CountryData | undefined {
   );
 }
 
-export function customArray(
-  fields: Record<string, string> = {
+/**
+ * Renders every country into an object shaped like `fields`, one output key
+ * per template.
+ *
+ * `sortBy` sorts by a key of the **output** object (`"name"`, `"value"`, …)
+ * after rendering. `sortDataBy` sorts by a dataset property
+ * (`"countryNameEn"`, …) before rendering. Both use a locale-aware,
+ * accent-sensitive collator.
+ */
+export function customArray<F extends Record<string, string>>(
+  fields: F = {
     name: "{countryNameEn} ({countryCode})",
     value: "{countryCode}",
-  },
+  } as unknown as F,
   {
     sortBy,
     sortDataBy,
     filter: filterFunc,
   }: {
-    sortBy?: CountryProperty;
+    sortBy?: keyof F;
     sortDataBy?: CountryScalarProperty;
     filter?: (cd: CountryData) => boolean;
   } = {}
-) {
-  const finalCollection: Record<string, string>[] = [];
+): Record<keyof F, string>[] {
+  const finalCollection: Record<keyof F, string>[] = [];
   let data: CountryData[] = countriesData;
   if (typeof filterFunc === "function") {
     data = data.filter(filterFunc);
@@ -129,18 +138,16 @@ export function customArray(
   }
 
   data.forEach((countryData: CountryData) => {
-    const collectionObject: Record<string, string> = {};
+    const collectionObject = {} as Record<keyof F, string>;
     for (const field in fields) {
       collectionObject[field] = supplant(fields[field], countryData);
     }
     finalCollection.push(collectionObject);
   });
 
-  if (sortBy && fields[sortBy as string]) {
+  if (sortBy && fields[sortBy]) {
     const collator = new Intl.Collator([], { sensitivity: "accent" });
-    finalCollection.sort((a, b) =>
-      collator.compare(a[sortBy as string], b[sortBy as string])
-    );
+    finalCollection.sort((a, b) => collator.compare(a[sortBy], b[sortBy]));
   }
 
   return finalCollection;

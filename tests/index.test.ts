@@ -95,3 +95,20 @@ describe("country-codes-list", () => {
     });
   });
 });
+
+describe("customArray sortBy", () => {
+  test("sortBy accepts a key of the fields template and sorts the output by it", () => {
+    const fields = { name: "{countryNameEn}", value: "{countryCode}" };
+    // Compile-time check: `sortBy` is `keyof typeof fields`, not a dataset key.
+    const sortBy: keyof typeof fields = "name";
+    const result = countryCodes.customArray(fields, { sortBy });
+    const names = result.map((r) => r.name);
+    const collator = new Intl.Collator([], { sensitivity: "accent" });
+    expect(names).toEqual([...names].sort(collator.compare));
+    expect(names[0]).toBe("Afghanistan");
+  });
+
+  test("without sortBy the output keeps dataset order", () => {
+    expect(countryCodes.customArray()[0].name).toBe("Andorra (AD)");
+  });
+});
