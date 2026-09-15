@@ -4,7 +4,10 @@
  * @param data - The object containing key-value pairs for replacement.
  * @returns The string with placeholders replaced by values.
  */
-export default function supplant(template: string, data: any): string {
+export default function supplant(
+  template: string,
+  data: Record<string, unknown>
+): string {
   return template.replace(
     /{([^{}]*)}/g,
     (match: string, key: string): string => {
