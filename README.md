@@ -15,16 +15,21 @@ Module with list of codes per country, including country codes, currency codes, 
 - 2-letter country code (ISO 3166-1 alpha-2): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
 - 3-letter country code (ISO 3166-1 alpha-3): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3)
 - Flag: the country's flag emoji (`flag`), derived from the alpha-2 code
+- Numeric country code (`countryCodeNumeric`, ISO 3166-1 numeric): three digits with leading zeros kept (`"004"` for Afghanistan, `"840"` for the United States), empty only for Kosovo (`XK`), which has no ISO assignment. Resolve one with [`findOneByCode("840")`](#api-details--findonebycode-method)
 - Alternative country codes (`altCodes`): non-primary 2-letter codes that still identify a country in the wild — `UK` for the United Kingdom (whose ISO code is `GB`) and `EL` for Greece (whose ISO code is `GR`). Resolve any of them with [`findOneByCode`](#api-details--findonebycode-method)
 - Country Name: Each name in english and in the local country language
 - Currency Code (ISO 4217): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/ISO_4217)
 - Currency Name (ISO 4217): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/ISO_4217)
+- Currency Numeric (`currencyNumeric`, ISO 4217 numeric): three digits (`"840"` for USD, `"978"` for EUR), empty when the country has no currency. From the ISO 4217 maintenance agency's [List One](https://www.six-group.com/en/products-services/financial-information/data-standards.html)
+- Currency Decimals (`currencyDecimals`, ISO 4217 minor units): `2` for most currencies, `0` for JPY or XOF, `3` for BHD or KWD; `null` when there is no currency. Same source as above
+- Currency Symbol (`currencySymbol`): the CLDR English narrow symbol — `"$"`, `"€"`, `"£"`, `"R$"`, `"₹"` — from Node's built-in ICU. Narrow means **not disambiguated**: 29 currencies render as `"$"` (USD, CAD, AUD, MXN, HKD, …), and `"£"`, `"kr"`, `"Rs"`, `"¥"` and `"₩"` are shared too, so never use the symbol as a key. Falls back to the ISO code when CLDR has no symbol (`"CHF"`, `"ZWG"`); empty when there is no currency
 - TIN Code (Taxpayer Identification Number, also known as VAT in some countries): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/VAT_identification_number). **Only populated for a subset**: 64 of the 250 records carry a `tinName` and 62 a `tinType`; the rest are empty strings
 - TIN Name: Obtained from [Wikipedia](https://en.wikipedia.org/wiki/VAT_identification_number)
 - Official language code (usually from ISO 639-1, or ISO 639-3 otherwise): Obtained from [Open Street Map](https://wiki.openstreetmap.org/wiki/Nominatim/Country_Codes). Returns only the first official language code per country
 - Official language name: Each name in english and in the local country language
 - Country Calling Code: The phone calling code for the country. Obtained from [Wikipedia](https://en.wikipedia.org/wiki/List_of_country_calling_codes#Alphabetical_listing_by_country_or_region). This is the ITU-T E.164 country code only (1-3 digits, no `+`, no spaces) — national area codes are never folded into it.
 - Area Codes: The national area codes that follow the calling code, as `string[]`. **Partially populated** — an empty array means "not recorded", not "this country has no area codes". Every member of the [North American Numbering Plan](https://en.wikipedia.org/wiki/North_American_Numbering_Plan) carries its area code (Jamaica `["876", "658"]`, Barbados `["246"]`, …) except the US, whose hundreds of area codes are out of scope here (Canada's are populated, a pre-existing exception), and UM, which shares `+1` with an empty array. Among the other shared calling codes, CC and CX both carry `["8"]` under `61` (Western Australia's area code — they differ only at the exchange level) and SJ carries `["79"]` under `47`; AU has no area codes recorded, AX and FI both use `358`, and GB, GG, IM and JE all use `44`, each with an empty array.
+- National Number Lengths: The possible lengths of the national significant number — every digit after the calling code, area code included — as a sorted `number[]`. Derived from Google's [libphonenumber](https://github.com/google/libphonenumber) `PhoneNumberMetadata.xml` (Apache-2.0), covering fixed-line and mobile ranges only; toll-free, premium-rate, VoIP, pager and UAN numbers are excluded. It is a **set, not a range** — the Netherlands is `[9, 11]` and South Korea is `[5, 6, 8, 9, 10]` — so validate with `includes`, never with a min/max comparison. **Partially populated** — seven uninhabited territories (`AQ`, `BV`, `GS`, `HM`, `PN`, `TF`, `UM`) carry an empty array, meaning "not recorded". See [`nationalNumberLengths`](#api-details--nationalnumberlengths)
 - Region: The Regional Classifications are from the [International Telecommunications Union](http://www.itu.int/ITU-D/ict/definitions/regions/index.html). Seen [here](https://meta.wikimedia.org/wiki/List_of_countries_by_regional_classification)
 
 ## Installation
@@ -178,7 +183,7 @@ countryCodes.findOne("countryCode", "ZZ"); // undefined
 
 ### API Details – findOneByCode Method
 
-Resolves a 2- or 3-letter country code to a country, case-insensitively, matching the official ISO 3166-1 alpha-2 and alpha-3 codes **and** the alternative codes in `altCodes`.
+Resolves a 2- or 3-letter country code, or an ISO 3166-1 numeric code, to a country, case-insensitively, matching the official ISO 3166-1 alpha-2 and alpha-3 codes **and** the alternative codes in `altCodes`.
 
 Use it when the code comes from somewhere you don't control — a browser or OS locale, an EU VAT number, an upstream API, a legacy database — where `UK` shows up as often as `GB`:
 
@@ -191,11 +196,49 @@ countryCodes.findOneByCode("EL").countryCode; // 'GR'
 countryCodes.findOneByCode("ZZ"); // undefined
 ```
 
-Input is trimmed and must be 2 or 3 ASCII letters; anything else returns `undefined`. The validation happens *before* uppercasing on purpose — Unicode case mapping turns `"ß"` into `"SS"` and `"ı"` into `"I"`, so validating afterwards would let junk input resolve to real countries.
+It also resolves ISO 3166-1 **numeric** codes — a string of exactly three ASCII digits, leading zeros included, as they appear in `countryCodeNumeric`:
 
-Note that `altCodes` and `areaCodes` hold arrays, so they can't be used as lookup or list keys. `filter`, `findOne` and `customList` accept only string-valued properties (the exported `CountryScalarProperty` type); reach for `findOneByCode` to search `altCodes`.
+```js
+countryCodes.findOneByCode("840").countryCode; // 'US'
+countryCodes.findOneByCode("004").countryCode; // 'AF'
+countryCodes.findOneByCode("4"); // undefined — must be zero-padded
+```
+
+Input is trimmed and must be 2 or 3 ASCII letters (or 3 ASCII digits for a numeric code); anything else returns `undefined`. The validation happens *before* uppercasing on purpose — Unicode case mapping turns `"ß"` into `"SS"` and `"ı"` into `"I"`, so validating afterwards would let junk input resolve to real countries.
+
+Note that `altCodes`, `areaCodes` and `nationalNumberLengths` hold arrays, so they can't be used as lookup or list keys. `filter`, `findOne` and `customList` accept only string-valued properties (the exported `CountryScalarProperty` type); reach for `findOneByCode` to search `altCodes`.
 
 `UK` is [exceptionally reserved](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Exceptional_reservations) in ISO 3166-1 at the United Kingdom's request; `EL` is the European Commission's code for Greece. Neither replaces the official code — `findOne("countryCode", "UK")` still returns `undefined`, and `countryCode` remains `GB`/`GR`.
+
+### API Details – nationalNumberLengths
+
+`nationalNumberLengths` answers "how many digits should this phone number have?" without pulling in a full phone-number library. It holds the possible lengths of the **national significant number** — the digits that follow the E.164 calling code:
+
+```js
+const countryCodes = require("country-codes-list");
+
+const gb = countryCodes.findOneByCode("GB");
+gb.nationalNumberLengths; // [9, 10]
+gb.nationalNumberLengths.includes("2079460958".length); // true
+```
+
+Two things are easy to get wrong:
+
+- **The area code is counted, the trunk prefix is not.** Great Britain's `020 7946 0958` is dialled domestically with a leading `0`, but the national significant number is `2079460958` — ten digits, area code included. Strip the trunk prefix before comparing.
+- **It is a set, not a range.** Numbering plans have holes. The Netherlands is `[9, 11]`, so a 10-digit Dutch number is invalid even though it sits between the two:
+
+```js
+const nl = countryCodes.findOneByCode("NL").nationalNumberLengths; // [9, 11]
+
+nl.includes(10); // false — correct
+10 >= Math.min(...nl) && 10 <= Math.max(...nl); // true — wrong
+```
+
+The values are keyed by country rather than by calling code because countries sharing a calling code genuinely differ: on `+44`, Great Britain is `[9, 10]` while Guernsey, the Isle of Man and Jersey are all `[10]`.
+
+Scope: fixed-line and mobile ranges only. A toll-free or premium-rate number (a UK `0800`, say) is not guaranteed to match. Germany is the widest plan at `[5 … 15]`, because direct-dial-in extensions are appended to the subscriber number.
+
+Being array-valued, it is not a usable `customList` placeholder — `{nationalNumberLengths}` is left in the output verbatim. Read it off `all()`, `findOne` or `findOneByCode` instead.
 
 ### API Details – customList Method
 
@@ -218,8 +261,12 @@ The available placeholders are:
 - `countryCallingCode`
 - `region`
 - `flag`
+- `countryCodeNumeric`
+- `currencyNumeric`
+- `currencyDecimals` (a number; left verbatim for the records with no currency, where it is `null`)
+- `currencySymbol`
 
-Array fields (`areaCodes`, `altCodes`) are not substituted: a `{areaCodes}` placeholder is left in the output as-is. Unknown placeholders are left untouched too.
+`altCodes`, `areaCodes` and `nationalNumberLengths` hold arrays and are **not** substituted — a `{areaCodes}` or `{nationalNumberLengths}` placeholder is left in the output verbatim, and so is any unknown placeholder. Array fields are also rejected as the list key, which is a compile-time error in TypeScript (see `CountryScalarProperty`).
 
 > [!IMPORTANT]
 > The key must be **unique** across countries. `countryCode` and `countryCodeAlpha3` are; `countryCallingCode`, `currencyCode`, `region` and `officialLanguageCode` are not. Keying on a non-unique property makes countries overwrite each other and only the last one survives — use [`customGroupedList`](#api-details--customgroupedlist-method) instead.
@@ -341,7 +388,7 @@ byRegion["Arab States"].length; // 22
 The package exports three types:
 
 - `CountryData`: the shape of one record.
-- `CountryProperty`: every key of `CountryData` (including the array fields `altCodes` and `areaCodes`).
+- `CountryProperty`: every key of `CountryData` (including the array fields `altCodes`, `areaCodes` and `nationalNumberLengths`, and the numeric `currencyDecimals`).
 - `CountryScalarProperty`: only the string-valued keys; this is what `filter`, `findOne`, `customList`, `customGroupedList` and `sortDataBy` accept.
 
 ```ts
@@ -350,3 +397,25 @@ import type { CountryData, CountryScalarProperty } from "country-codes-list";
 const key: CountryScalarProperty = "currencyCode";
 const pick = (c: CountryData) => c[key];
 ```
+
+## Data exports (JSON / CSV / CDN)
+
+The package also ships the whole dataset as plain files, for anything that isn't JavaScript — spreadsheets, Python, a SQL loader, a `<script>`-free web page:
+
+- `dist/countries.json` — the full array returned by `all()`, pretty-printed
+- `dist/countries.csv` — one row per country; the header lists every field, array fields (`altCodes`, `areaCodes`, `nationalNumberLengths`) are joined with `|`, `null` is an empty cell, cells are quoted per RFC 4180 and rows end with LF. It is UTF-8 without a BOM, and `countryCodeNumeric` / `currencyNumeric` keep their leading zeros — import as UTF-8 and read the numeric columns as text so spreadsheets don't turn `"004"` into `4`
+
+Both are on jsDelivr, pinned to the major version:
+
+```
+https://cdn.jsdelivr.net/npm/country-codes-list@3/dist/countries.json
+https://cdn.jsdelivr.net/npm/country-codes-list@3/dist/countries.csv
+```
+
+```js
+const countries = await fetch(
+  "https://cdn.jsdelivr.net/npm/country-codes-list@3/dist/countries.json"
+).then((r) => r.json());
+```
+
+Both files are written by `npm run build`, so they always match the compiled dataset. The generated fields themselves (`countryCodeNumeric`, `currencyNumeric`, `currencyDecimals`, `currencySymbol`, `nationalNumberLengths`) are produced by the scripts under `scripts/` — `npm run data:all` regenerates them from their sources.

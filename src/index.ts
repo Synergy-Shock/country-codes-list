@@ -58,7 +58,8 @@ export function findOne(
 }
 
 /**
- * Resolves any 2- or 3-letter country code to its country, case-insensitively.
+ * Resolves any 2- or 3-letter country code, or ISO 3166-1 numeric code, to its
+ * country, case-insensitively.
  *
  * Unlike {@link findOne}, this looks beyond the primary ISO 3166-1 alpha-2
  * value: it matches `countryCode`, `countryCodeAlpha3` and `altCodes`, so codes
@@ -69,16 +70,26 @@ export function findOne(
  * Official codes always win: no country's `altCodes` may shadow another
  * country's `countryCode` or `countryCodeAlpha3`.
  *
+ * A string of exactly three ASCII digits is looked up as an ISO 3166-1
+ * numeric code instead (`"840"` -> US). Leading zeros are significant:
+ * `"004"` resolves, `"4"` does not.
+ *
  * Returns a live reference into the shared dataset — the country object is
  * not copied; treat it as read-only.
  *
  * @example
  * findOneByCode("UK")?.countryCode; // -> "GB"
  * findOneByCode("gbr")?.countryCode; // -> "GB"
+ * findOneByCode("840")?.countryCode; // -> "US"
  */
 export function findOneByCode(code: string): CountryData | undefined {
   if (typeof code !== "string") return undefined;
   const trimmed = code.trim();
+  if (/^[0-9]{3}$/.test(trimmed)) {
+    return countriesData.find(
+      (countryData: CountryData) => countryData.countryCodeNumeric === trimmed
+    );
+  }
   // Validate before uppercasing: Unicode case mapping can turn invalid input
   // into a real code ("ß" and "ſs" uppercase to "SS", "ı" to "I"), which would
   // otherwise resolve to South Sudan and friends.

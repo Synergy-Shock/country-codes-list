@@ -142,6 +142,67 @@ describe("non-NANP countries that embedded an area code", () => {
   });
 });
 
+describe("nationalNumberLengths (issue #46)", () => {
+  /**
+   * The examples the issue asked for, corrected against the numbering plans.
+   * The issue lists one length per *calling code*; the dataset records a set
+   * per *country*, which differs in two ways worth pinning. GB is [9, 10] —
+   * some geographic ranges still have 9-digit national numbers, so the issue's
+   * flat 10 would reject valid UK numbers. And +1 is a single calling code
+   * shared by 26 countries, each carrying its own set.
+   */
+  const ISSUE_46_EXAMPLES: Record<string, number[]> = {
+    US: [10],
+    CA: [10],
+    GB: [9, 10],
+    IN: [10],
+    FR: [9],
+    NO: [8],
+  };
+
+  test.each(Object.entries(ISSUE_46_EXAMPLES))(
+    "%s records %p",
+    (code, lengths) => {
+      expect(byCode(code).nationalNumberLengths).toEqual(lengths);
+    }
+  );
+
+  test.each([...Object.keys(NANP_TERRITORIES), "US", "CA"])(
+    "%s dials 10 national digits like every NANP member",
+    (code) => {
+      expect(byCode(code).nationalNumberLengths).toEqual([10]);
+    }
+  );
+
+  test("it is a set, not a range — plans have holes", () => {
+    // Dutch national numbers are 9 digits, or 11 for the 06-760 ranges. 10 is
+    // not valid, so a {min, max} representation would accept invalid numbers.
+    expect(byCode("NL").nationalNumberLengths).toEqual([9, 11]);
+    expect(byCode("KR").nationalNumberLengths).not.toContain(7);
+  });
+
+  test("Germany has the widest plan, from DDI extensions", () => {
+    expect(byCode("DE").nationalNumberLengths).toEqual([
+      5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+    ]);
+  });
+
+  test("countries sharing a calling code can differ", () => {
+    // The reason this is keyed by country and not by calling code.
+    expect(byCode("GB").nationalNumberLengths).toEqual([9, 10]);
+    ["GG", "IM", "JE"].forEach((code) => {
+      expect(byCode(code).countryCallingCode).toBe("44");
+      expect(byCode(code).nationalNumberLengths).toEqual([10]);
+    });
+    expect(byCode("FI").nationalNumberLengths).toEqual([5, 6, 7, 8, 9, 10]);
+    expect(byCode("AX").nationalNumberLengths).toEqual([6, 7, 8, 9, 10]);
+  });
+
+  test("a territory with no numbering plan records nothing", () => {
+    expect(byCode("AQ").nationalNumberLengths).toEqual([]);
+  });
+});
+
 describe("regression: +246 belongs to British Indian Ocean Territory (issue #28)", () => {
   test("only BIOT claims calling code 246", () => {
     const claimants = all
