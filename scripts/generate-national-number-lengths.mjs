@@ -16,15 +16,14 @@
  * ships (`files: ["dist"]` in package.json).
  *
  * Usage:
- *   node scripts/generate-national-number-lengths.mjs            # dry run; exit 1 on drift
- *   node scripts/generate-national-number-lengths.mjs --write    # rewrite the dataset in place
+ *   node scripts/generate-national-number-lengths.mjs            # rewrite the dataset in place
+ *   node scripts/generate-national-number-lengths.mjs --check    # dry run; exit 1 on drift
  *   node scripts/generate-national-number-lengths.mjs --json     # print the derived map only
  *   node scripts/generate-national-number-lengths.mjs --ref=v9.0.36
  */
 
-import { readFileSync, writeFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
+import { readFileSync } from "node:fs";
+import { applyGenerated, DATASET_PATH, readRecords } from "./dataset.mjs";
 
 /**
  * Pinned upstream ref. Never fetch `master`: libphonenumber tags roughly twice
@@ -63,23 +62,6 @@ const IGNORED_TERRITORIES = new Set(["AC", "TA"]);
  * permanent population, and so no civil numbering plan.
  */
 const EXPECTED_MISSING = new Set(["AQ", "BV", "GS", "HM", "PN", "TF", "UM"]);
-
-/**
- * Every record's `region` line — the anchor the new key is written before.
- * `areaCodes` would read better as the anchor, since the new key belongs
- * directly after it, but Canada's `areaCodes` array is wrapped across 30-odd
- * lines. `region` is a single-line string on all 250 records.
- */
-const REGION_LINE = /^ {4}region: "[^"]*",$/;
-const LENGTHS_LINE = /^ {4}nationalNumberLengths: \[[^\]]*\],$/;
-const COUNTRY_CODE_LINE = /^ {4}countryCode: "([A-Z]{2})",$/;
-
-const DATASET_PATH = join(
-  dirname(fileURLToPath(import.meta.url)),
-  "..",
-  "src",
-  "countriesData.ts"
-);
 
 // ---------------------------------------------------------------------------
 // Parsing
@@ -133,6 +115,9 @@ const lengthsForTerritory = (block, territoryId) => {
     if (!attr) continue;
     for (const n of parseLengths(attr[1], territoryId)) lengths.add(n);
   }
+  if (!lengths.size) {
+    console.warn(`warning: ${territoryId}: territory present upstream but no lengths found`);
+  }
   // Numeric comparator is required — the default lexicographic sort would
   // order Germany as [10, 11, 5, 6, ...].
   return [...lengths].sort((a, b) => a - b);
@@ -163,55 +148,6 @@ const parseMetadata = (xml) => {
 };
 
 // ---------------------------------------------------------------------------
-// Dataset
-// ---------------------------------------------------------------------------
-
-/**
- * Walks the dataset literal line by line and returns one entry per record:
- * its country code, its current lengths (if the field is already present) and
- * the line indices the writer needs.
- */
-const readDataset = (lines) => {
-  const records = [];
-  let countryCode = null;
-  let callingCode = null;
-
-  lines.forEach((line, index) => {
-    const code = line.match(COUNTRY_CODE_LINE);
-    if (code) {
-      countryCode = code[1];
-      callingCode = null;
-      return;
-    }
-    const calling = line.match(/^ {4}countryCallingCode: "(\d*)",$/);
-    if (calling) {
-      callingCode = calling[1];
-      return;
-    }
-    if (!REGION_LINE.test(line)) return;
-
-    const previous = lines[index - 1] ?? "";
-    const present = LENGTHS_LINE.test(previous);
-    records.push({
-      countryCode,
-      callingCode,
-      anchor: index,
-      replaces: present ? index - 1 : null,
-      existing: present
-        ? JSON.parse(
-            previous.slice(previous.indexOf("["), previous.lastIndexOf("]") + 1)
-          )
-        : null,
-    });
-  });
-
-  return records;
-};
-
-const formatLine = (lengths) =>
-  `    nationalNumberLengths: [${lengths.join(", ")}],`;
-
-// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -221,7 +157,6 @@ const fail = (message) => {
 };
 
 const args = process.argv.slice(2);
-const write = args.includes("--write");
 const asJson = args.includes("--json");
 const ref = args.find((a) => a.startsWith("--ref="))?.slice(6) ?? LIBPHONENUMBER_REF;
 
@@ -231,18 +166,13 @@ if (!response.ok) {
 }
 const territories = parseMetadata(await response.text());
 
-const source = readFileSync(DATASET_PATH, "utf8");
-const lines = source.split("\n");
-const records = readDataset(lines);
+const records = readRecords(readFileSync(DATASET_PATH, "utf8").split("\n"));
+const codes = records.map((r) => r.countryCode);
 
 // --- Preflight: anything surprising means the repo or upstream changed shape,
 // --- and a human needs to look before 250 lines get rewritten.
-const codes = records.map((r) => r.countryCode);
 if (records.length !== 250) {
   fail(`expected 250 records, found ${records.length}`);
-}
-if (codes.some((c) => c === null)) {
-  fail("a record's region line was not preceded by a countryCode line");
 }
 if (new Set(codes).size !== codes.length) {
   fail("duplicate countryCode values in the dataset");
@@ -278,9 +208,10 @@ if (unmapped.length) {
 // --- signal about the countryCallingCode column. Warn, never fail.
 for (const record of records) {
   const upstream = territories.get(record.countryCode);
-  if (upstream && upstream.callingCode !== record.callingCode) {
+  const callingCode = JSON.parse(record.fields.get("countryCallingCode").value);
+  if (upstream && upstream.callingCode !== callingCode) {
     console.warn(
-      `warning: ${record.countryCode} dials +${record.callingCode} here but ` +
+      `warning: ${record.countryCode} dials +${callingCode} here but ` +
         `+${upstream.callingCode} upstream`
     );
   }
@@ -295,40 +226,15 @@ if (asJson) {
   process.exit(0);
 }
 
-const changes = records.filter(
-  (r) =>
-    JSON.stringify(r.existing) !== JSON.stringify(derived.get(r.countryCode))
-);
-
 const populated = [...derived.values()].filter((l) => l.length).length;
 console.log(`libphonenumber ${ref}`);
 console.log(
   `${records.length} records — ${populated} populated, ${records.length - populated} empty`
 );
 
-for (const record of changes) {
-  const before = record.existing ? `[${record.existing.join(", ")}]` : "(absent)";
-  console.log(
-    `  ${record.countryCode}: ${before} -> [${derived.get(record.countryCode).join(", ")}]`
-  );
-}
-
-if (!changes.length) {
-  console.log("in sync, 0 changes");
-  process.exit(0);
-}
-
-if (!write) {
-  console.log(`\n${changes.length} change(s). Re-run with --write to apply.`);
-  process.exit(1);
-}
-
-// Apply back-to-front so earlier line indices stay valid.
-const output = [...lines];
-for (const record of [...records].reverse()) {
-  const line = formatLine(derived.get(record.countryCode));
-  if (record.replaces !== null) output[record.replaces] = line;
-  else output.splice(record.anchor, 0, line);
-}
-writeFileSync(DATASET_PATH, output.join("\n"));
-console.log(`\nwrote ${changes.length} change(s) to src/countriesData.ts`);
+applyGenerated([
+  [
+    "nationalNumberLengths",
+    (record) => `[${derived.get(record.countryCode).join(", ")}]`,
+  ],
+]);
