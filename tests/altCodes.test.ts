@@ -239,6 +239,29 @@ describe("findOneByCode", () => {
       )
     );
   });
+
+  test("resolves ISO 3166-1 numeric codes", () => {
+    expect(countryCodes.findOneByCode("840")?.countryCode).toBe("US");
+    expect(countryCodes.findOneByCode("004")?.countryCode).toBe("AF");
+    expect(countryCodes.findOneByCode(" 826 ")?.countryCode).toBe("GB");
+    // Exactly three digits: leading zeros are part of the code.
+    expect(countryCodes.findOneByCode("4")).toBeUndefined();
+    expect(countryCodes.findOneByCode("0840")).toBeUndefined();
+    // Unassigned numeric and non-ASCII digits (Arabic-Indic "٨٤٠") don't resolve.
+    expect(countryCodes.findOneByCode("999")).toBeUndefined();
+    expect(countryCodes.findOneByCode("٨٤٠")).toBeUndefined();
+  });
+
+  test("resolves every numeric code in the dataset", () => {
+    const unresolved = all
+      .filter((c) => c.countryCodeNumeric !== "")
+      .filter(
+        (c) =>
+          countryCodes.findOneByCode(c.countryCodeNumeric)?.countryCode !==
+          c.countryCode
+      );
+    expect(unresolved.map((c) => c.countryCode)).toEqual([]);
+  });
 });
 
 describe("findOne is unchanged", () => {

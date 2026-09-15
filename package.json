@@ -10,6 +10,8 @@
   "scripts": {
     "build": "tsc",
     "test": "jest",
+    "data:numeric": "node scripts/generate-numeric-codes.mjs",
+    "data:all": "npm run data:numeric",
     "prepublishOnly": "npm run build"
   },
   "repository": {

@@ -449,6 +449,27 @@ describe("ISO 3166-1 completeness", () => {
   });
 });
 
+describe("countryCodeNumeric is ISO 3166-1 numeric", () => {
+  test("is three digits for every ISO code, and empty only for the non-ISO entries", () => {
+    const offenders = all
+      .filter((c) => !/^[0-9]{3}$/.test(c.countryCodeNumeric))
+      .map((c) => c.countryCode);
+    expectExactly(offenders, Array.from(NON_ISO_ENTRIES.keys()));
+    expect(
+      all
+        .filter((c) => NON_ISO_ENTRIES.has(c.countryCode))
+        .map((c) => c.countryCodeNumeric)
+    ).toEqual(Array.from(NON_ISO_ENTRIES.keys()).map(() => ""));
+  });
+
+  test("is unique across the dataset", () => {
+    const populated = all
+      .map((c) => c.countryCodeNumeric)
+      .filter((numeric) => numeric !== "");
+    expect(new Set(populated).size).toBe(populated.length);
+  });
+});
+
 describe("flag emoji", () => {
   /** The regional-indicator pair for an alpha-2 code, computed not hardcoded. */
   const flagFor = (alpha2: string): string =>
