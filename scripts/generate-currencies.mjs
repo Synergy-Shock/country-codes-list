@@ -10,6 +10,9 @@
  *   - numeric code and minor units: the ISO 4217 maintenance agency's "List
  *     One" XML (SIX Group), fetched live. The `Pblshd` date is printed so a
  *     regeneration can be dated in its commit message.
+ *   - symbols depend on the CLDR version bundled with the running Node; the
+ *     CLDR version is printed too, so record both in the commit message when
+ *     regenerating (a CLDR bump can legitimately change `--check` results).
  *   - symbol: CLDR via Node's built-in ICU, `Intl.NumberFormat("en", ...)`
  *     with `currencyDisplay: "narrowSymbol"`, falling back to `"symbol"` and
  *     finally to the code itself when CLDR has no symbol at all. Symbols are
@@ -64,7 +67,7 @@ if (!response.ok) {
   process.exit(1);
 }
 const xml = await response.text();
-console.log(`ISO 4217 List One published ${xml.match(/Pblshd="([^"]*)"/)?.[1] ?? "?"}`);
+console.log(`ISO 4217 List One published ${xml.match(/Pblshd="([^"]*)"/)?.[1] ?? "?"}; symbols from CLDR ${process.versions.cldr} (Node ${process.versions.node})`);
 const iso4217 = parseListOne(xml);
 
 const currencyOf = (record) => {

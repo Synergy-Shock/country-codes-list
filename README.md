@@ -21,7 +21,7 @@ Module with list of codes per country, including country codes, currency codes, 
 - Currency Name (ISO 4217): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/ISO_4217)
 - Currency Numeric (`currencyNumeric`, ISO 4217 numeric): three digits (`"840"` for USD, `"978"` for EUR), empty when the country has no currency. From the ISO 4217 maintenance agency's [List One](https://www.six-group.com/en/products-services/financial-information/data-standards.html)
 - Currency Decimals (`currencyDecimals`, ISO 4217 minor units): `2` for most currencies, `0` for JPY or XOF, `3` for BHD or KWD; `null` when there is no currency. Same source as above
-- Currency Symbol (`currencySymbol`): the CLDR English narrow symbol — `"$"`, `"€"`, `"£"`, `"R$"`, `"₹"` — from Node's built-in ICU. Narrow means **not disambiguated**: USD, CAD and AUD all render as `"$"`. Falls back to the ISO code when CLDR has no symbol (`"CHF"`, `"ZWG"`); empty when there is no currency
+- Currency Symbol (`currencySymbol`): the CLDR English narrow symbol — `"$"`, `"€"`, `"£"`, `"R$"`, `"₹"` — from Node's built-in ICU. Narrow means **not disambiguated**: 29 currencies render as `"$"` (USD, CAD, AUD, MXN, HKD, …), and `"£"`, `"kr"`, `"Rs"`, `"¥"` and `"₩"` are shared too, so never use the symbol as a key. Falls back to the ISO code when CLDR has no symbol (`"CHF"`, `"ZWG"`); empty when there is no currency
 - TIN Code (Taxpayer Identification Number, also known as VAT in some countries): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/VAT_identification_number)
 - TIN Name: Obtained from [Wikipedia](https://en.wikipedia.org/wiki/VAT_identification_number)
 - Official language code (usually from ISO 639-1, or ISO 639-3 otherwise)): Obtained from [Open Street Map](https://wiki.openstreetmap.org/wiki/Nominatim/Country_Codes). Returns only the first official language code per country
@@ -156,7 +156,7 @@ console.log(myCountryCodesObject);
 
 ### API Details – findOneByCode Method
 
-Resolves a 2- or 3-letter country code to a country, case-insensitively, matching the official ISO 3166-1 alpha-2 and alpha-3 codes **and** the alternative codes in `altCodes`.
+Resolves a 2- or 3-letter country code, or an ISO 3166-1 numeric code, to a country, case-insensitively, matching the official ISO 3166-1 alpha-2 and alpha-3 codes **and** the alternative codes in `altCodes`.
 
 Use it when the code comes from somewhere you don't control — a browser or OS locale, an EU VAT number, an upstream API, a legacy database — where `UK` shows up as often as `GB`:
 
@@ -236,7 +236,7 @@ The available placeholders are:
 - `flag`
 - `countryCodeNumeric`
 - `currencyNumeric`
-- `currencyDecimals` (a number; left verbatim for the three records where it is `null`)
+- `currencyDecimals` (a number; left verbatim for the records with no currency, where it is `null`)
 - `currencySymbol`
 
 `altCodes`, `areaCodes` and `nationalNumberLengths` hold arrays and are **not** substitutable — `{nationalNumberLengths}` is left in the output verbatim. They are also rejected as the list key, which is a compile-time error in TypeScript (see `CountryScalarProperty`).
@@ -332,7 +332,7 @@ byRegion["Europe"]?.length ?? 0; // 0
 The package also ships the whole dataset as plain files, for anything that isn't JavaScript — spreadsheets, Python, a SQL loader, a `<script>`-free web page:
 
 - `dist/countries.json` — the full array returned by `all()`, pretty-printed
-- `dist/countries.csv` — one row per country; the header lists every field, array fields (`altCodes`, `areaCodes`, `nationalNumberLengths`) are joined with `|`, `null` is an empty cell, and cells are quoted per RFC 4180
+- `dist/countries.csv` — one row per country; the header lists every field, array fields (`altCodes`, `areaCodes`, `nationalNumberLengths`) are joined with `|`, `null` is an empty cell, cells are quoted per RFC 4180 and rows end with LF. It is UTF-8 without a BOM, and `countryCodeNumeric` / `currencyNumeric` keep their leading zeros — import as UTF-8 and read the numeric columns as text so spreadsheets don't turn `"004"` into `4`
 
 Both are on jsDelivr, pinned to the major version:
 

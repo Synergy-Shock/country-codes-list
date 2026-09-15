@@ -95,9 +95,10 @@ type CountryProperty = keyof CountryData;
 /**
  * The subset of {@link CountryProperty} whose values are plain strings.
  *
- * Array-valued fields (`areaCodes`, `altCodes`, `nationalNumberLengths`) can't
- * be compared with `===`, used as an object key, or sorted with a collator, so
- * the lookup and list helpers accept only these. Use `findOneByCode` to search
+ * Non-string fields — the arrays `areaCodes`, `altCodes` and
+ * `nationalNumberLengths`, and the numeric `currencyDecimals` — can't be
+ * compared with a string `===`, used as an object key, or sorted with a
+ * collator, so the lookup and list helpers accept only these. Use `findOneByCode` to search
  * `altCodes`.
  */
 type CountryScalarProperty = {

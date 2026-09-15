@@ -58,7 +58,8 @@ export function findOne(
 }
 
 /**
- * Resolves any 2- or 3-letter country code to its country, case-insensitively.
+ * Resolves any 2- or 3-letter country code, or ISO 3166-1 numeric code, to its
+ * country, case-insensitively.
  *
  * Unlike {@link findOne}, this looks beyond the primary ISO 3166-1 alpha-2
  * value: it matches `countryCode`, `countryCodeAlpha3` and `altCodes`, so codes
