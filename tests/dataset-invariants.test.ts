@@ -248,6 +248,7 @@ const KNOWN_GAPS_EMPTY_FIELD: Partial<
  * defect ledger — it is an expected-exceptions list and it may grow.
  */
 const ISO_639_3_FALLBACKS: Readonly<Record<string, string>> = {
+  BF: "mos", // Mooré
   ME: "cnr", // Montenegrin
   NU: "niu", // Niuean
   TK: "tkl", // Tokelauan
