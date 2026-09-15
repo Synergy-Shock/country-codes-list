@@ -231,15 +231,14 @@ const REQUIRED_STRING_FIELDS: readonly CountryScalarProperty[] = [
 const KNOWN_GAPS_EMPTY_FIELD: Partial<
   Record<CountryScalarProperty, readonly string[]>
 > = {
-  // ISO 4217 assigns nothing to these territories: the register records
-  // "No universal currency" for both. GS is still an inconsistency (every
-  // other uninhabited dependency carries the administering power's currency:
-  // BV→NOK, HM→AUD, TF→EUR, IO→USD) but there is no clean way to say "GBP by
-  // convention" without inventing a value, so it stays.
-  currencyCode: ["AQ", "GS"],
+  // ISO 4217 assigns nothing to Antarctica ("No universal currency"). Every
+  // other dependency without an ISO 4217 row carries the currency that
+  // actually circulates there by convention (BV→NOK, HM→AUD, TF→EUR, IO→USD,
+  // GS→GBP, PS→ILS); Antarctica has no circulating currency at all.
+  currencyCode: ["AQ"],
 
   // No currency at all (see `currencyCode` above), so no name either.
-  currencyNameEn: ["AQ", "GS"],
+  currencyNameEn: ["AQ"],
 };
 
 /**

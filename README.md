@@ -67,7 +67,7 @@ npm test
    const prop: CountryProperty = "countryCode";
    ```
 
-2. **Module Imports**: The package ships as CommonJS with named exports. `import` works through Node's CommonJS interop (and through bundlers); there is no native ESM build yet — one is planned:
+2. **Module Imports**: The package ships as CommonJS with named exports. `import` works through Node's CommonJS interop (and through bundlers); there is no native ESM build:
 
    ```javascript
    // CommonJS
