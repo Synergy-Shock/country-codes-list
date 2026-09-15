@@ -85,7 +85,7 @@ Each record is a `CountryData` object. The example column shows the `US` record.
 | `countryCallingCode` | `string` | `"1"` | ITU-T E.164 country code, 1 to 3 digits, no `+`. Source: [Wikipedia](https://en.wikipedia.org/wiki/List_of_country_calling_codes). |
 | `areaCodes` | `string[]` | `[]` | National area codes after the calling code. Populated for [NANP](https://en.wikipedia.org/wiki/North_American_Numbering_Plan) members (not US or UM), plus `CC`, `CX` and `SJ`. An empty array means "not recorded". |
 | `nationalNumberLengths` | `number[]` | `[10]` | Possible digit counts of the national number, sorted. Empty for `AQ`, `BV`, `GS`, `HM`, `PN`, `TF`, `UM`. Source: [libphonenumber](https://github.com/google/libphonenumber) (fixed-line and mobile only). |
-| `region` | `string` | `"North America"` | One of six [ITU regions](https://www.itu.int/en/ITU-D/Statistics/Pages/definitions/regions.aspx). |
+| `region` | `string` | `"North America"` | One of six values adapted from the [ITU regions](https://www.itu.int/en/ITU-D/Statistics/Pages/definitions/regions.aspx). |
 | `flag` | `string` | `"🇺🇸"` | Flag emoji, derived from `countryCode`. |
 
 ## Things to know
@@ -118,7 +118,7 @@ countryCodes.findOneByCode("GB").nationalNumberLengths.includes("2079460958".len
 
 **`UK` and `EL` are not ISO codes.** `findOneByCode("UK")` returns the United Kingdom, but `countryCode` stays `"GB"`. `findOne("countryCode", "UK")` returns `undefined`.
 
-**`region` has six values.** `Africa`, `Arab States`, `Asia & Pacific`, `Europe`, `North America` and `South/Latin America`. These are the ITU classes.
+**`region` has six values.** `Africa`, `Arab States`, `Asia & Pacific`, `Europe`, `North America` and `South/Latin America`. They follow the ITU classification, with two changes: ITU's "The Americas" is split in two, and ITU's "CIS" countries are placed in `Europe` or `Asia & Pacific`.
 
 ## API reference
 

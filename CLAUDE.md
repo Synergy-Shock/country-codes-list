@@ -53,7 +53,7 @@ Templates use `{placeholder}` syntax with any string or number field. Array fiel
 | `countryCallingCode` | `string` | all | E.164 country code only. Digits, no `+`, no area code. Shared by many countries (`1`, `44`, `61`). |
 | `areaCodes` | `string[]` | NANP members except `US` and `UM`, plus `CC`, `CX`, `SJ` | Empty means "not recorded", not "none". |
 | `nationalNumberLengths` | `number[]` | all but `AQ`, `BV`, `GS`, `HM`, `PN`, `TF`, `UM` | A set, not a range. Fixed-line and mobile only. Generated. |
-| `region` | `string` | all | Six ITU values: Africa, Arab States, Asia & Pacific, Europe, North America, South/Latin America. |
+| `region` | `string` | all | Six values adapted from ITU: Africa, Arab States, Asia & Pacific, Europe, North America, South/Latin America. |
 | `flag` | `string` | all | Emoji derived from `countryCode`. |
 
 ## Rules for correct use
