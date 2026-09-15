@@ -3,6 +3,8 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "target": "ES6",
+    "lib": ["ES2016"],
+    "types": ["jest", "node"],
     "module": "CommonJS",
     "declaration": true,
     "strict": true,
