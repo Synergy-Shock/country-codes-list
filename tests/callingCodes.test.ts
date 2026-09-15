@@ -71,6 +71,10 @@ describe("areaCodes", () => {
   });
 
   test("never repeats a callingCode+areaCode pair across countries", () => {
+    // CC (+61 8 9162) and CX (+61 8 9164) both sit inside Western Australia's
+    // area code 8 and are only told apart at the exchange level, so the pair
+    // is genuinely shared. Any other collision is a data error.
+    const SHARED_PAIRS = ["+61-8 claimed by CX and CC"];
     const owner = new Map<string, string>();
     const collisions: string[] = [];
     all.forEach((c) =>
@@ -81,7 +85,7 @@ describe("areaCodes", () => {
         else owner.set(key, c.countryCode);
       })
     );
-    expect(collisions).toEqual([]);
+    expect(collisions).toEqual(SHARED_PAIRS);
   });
 });
 
