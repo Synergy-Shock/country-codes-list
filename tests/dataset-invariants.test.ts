@@ -580,6 +580,69 @@ describe("currencyCode is valid ISO 4217", () => {
   });
 });
 
+describe("currency details follow currencyCode", () => {
+  const withCurrency = all.filter((c) => c.currencyCode !== "");
+  const withoutCurrency = all.filter((c) => c.currencyCode === "");
+
+  test("every currencyCode has a three-digit ISO 4217 numeric code", () => {
+    const offenders = withCurrency
+      .filter((c) => !/^[0-9]{3}$/.test(c.currencyNumeric))
+      .map((c) => `${c.countryCode}=${c.currencyNumeric}`);
+    expect(offenders).toEqual([]);
+  });
+
+  test("every currencyCode has ISO 4217 minor units in {0, 2, 3, 4}", () => {
+    const offenders = withCurrency
+      .filter((c) => ![0, 2, 3, 4].includes(c.currencyDecimals as number))
+      .map((c) => `${c.countryCode}=${c.currencyDecimals}`);
+    expect(offenders).toEqual([]);
+  });
+
+  test("every currencyCode has a non-empty, trimmed symbol", () => {
+    const offenders = withCurrency
+      .filter((c) => c.currencySymbol === "" || c.currencySymbol !== c.currencySymbol.trim())
+      .map((c) => `${c.countryCode}="${c.currencySymbol}"`);
+    expect(offenders).toEqual([]);
+  });
+
+  test("records without a currency carry no currency details", () => {
+    const offenders = withoutCurrency
+      .filter(
+        (c) =>
+          c.currencyNumeric !== "" ||
+          c.currencyDecimals !== null ||
+          c.currencySymbol !== ""
+      )
+      .map((c) => c.countryCode);
+    expect(offenders).toEqual([]);
+  });
+
+  test("records sharing a currencyCode share numeric, decimals and symbol", () => {
+    const detailsByCode = new Map<string, Set<string>>();
+    withCurrency.forEach((c) => {
+      const details = JSON.stringify([c.currencyNumeric, c.currencyDecimals, c.currencySymbol]);
+      const seen = detailsByCode.get(c.currencyCode) ?? new Set<string>();
+      seen.add(details);
+      detailsByCode.set(c.currencyCode, seen);
+    });
+    const split = Array.from(detailsByCode)
+      .filter(([, details]) => details.size > 1)
+      .map(([code]) => code);
+    expect(split).toEqual([]);
+  });
+
+  test("currencyNumeric identifies the currencyCode", () => {
+    const codeByNumeric = new Map<string, string>();
+    const clashes: string[] = [];
+    withCurrency.forEach((c) => {
+      const seen = codeByNumeric.get(c.currencyNumeric);
+      if (seen && seen !== c.currencyCode) clashes.push(`${c.currencyNumeric}: ${seen}/${c.currencyCode}`);
+      codeByNumeric.set(c.currencyNumeric, c.currencyCode);
+    });
+    expect(clashes).toEqual([]);
+  });
+});
+
 describe("officialLanguageCode is a valid ISO 639 code", () => {
   test("every language code is ISO 639-1, a declared 639-3 fallback, or a known gap", () => {
     const offenders = all

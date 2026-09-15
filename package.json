@@ -11,7 +11,8 @@
     "build": "tsc",
     "test": "jest",
     "data:numeric": "node scripts/generate-numeric-codes.mjs",
-    "data:all": "npm run data:numeric",
+    "data:currencies": "node scripts/generate-currencies.mjs",
+    "data:all": "npm run data:numeric && npm run data:currencies",
     "prepublishOnly": "npm run build"
   },
   "repository": {

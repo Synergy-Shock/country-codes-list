@@ -45,6 +45,26 @@ type CountryData = {
    * `scripts/generate-numeric-codes.mjs`; `findOneByCode("840")` resolves it.
    */
   countryCodeNumeric: string;
+  /**
+   * ISO 4217 numeric code of `currencyCode`, three digits with leading zeros
+   * kept (`"840"` for USD, `"978"` for EUR). Empty when the record has no
+   * currency. Generated from ISO 4217 List One by
+   * `scripts/generate-currencies.mjs`.
+   */
+  currencyNumeric: string;
+  /**
+   * Number of digits after the decimal separator (ISO 4217 "minor units"):
+   * `2` for most currencies, `0` for JPY or XOF, `3` for BHD or KWD. `null`
+   * when the record has no currency or ISO 4217 lists it as "N.A.".
+   */
+  currencyDecimals: number | null;
+  /**
+   * CLDR English narrow symbol for `currencyCode` (`"$"`, `"€"`, `"£"`,
+   * `"R$"`, `"₹"`), from Node's ICU. Narrow means not disambiguated: USD,
+   * CAD and AUD all render as `"$"`. Falls back to the ISO code when CLDR has
+   * no symbol (`"CHF"`, `"ZWG"`). Empty when the record has no currency.
+   */
+  currencySymbol: string;
 };
 
 type CountryProperty = keyof CountryData;
@@ -78,6 +98,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇦🇩",
     countryCodeNumeric: "020",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Afghanistan",
@@ -97,6 +120,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇦🇫",
     countryCodeNumeric: "004",
+    currencyNumeric: "971",
+    currencyDecimals: 2,
+    currencySymbol: "؋",
   },
   {
     countryNameEn: "Antigua and Barbuda",
@@ -115,6 +141,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇦🇬",
     countryCodeNumeric: "028",
+    currencyNumeric: "951",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Anguilla",
@@ -133,6 +162,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇦🇮",
     countryCodeNumeric: "660",
+    currencyNumeric: "951",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Albania",
@@ -151,6 +183,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇦🇱",
     countryCodeNumeric: "008",
+    currencyNumeric: "008",
+    currencyDecimals: 2,
+    currencySymbol: "ALL",
   },
   {
     countryNameEn: "Armenia",
@@ -169,6 +204,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇦🇲",
     countryCodeNumeric: "051",
+    currencyNumeric: "051",
+    currencyDecimals: 2,
+    currencySymbol: "֏",
   },
   {
     countryNameEn: "Angola",
@@ -187,6 +225,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇦🇴",
     countryCodeNumeric: "024",
+    currencyNumeric: "973",
+    currencyDecimals: 2,
+    currencySymbol: "Kz",
   },
   {
     countryNameEn: "Antarctica",
@@ -205,6 +246,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇦🇶",
     countryCodeNumeric: "010",
+    currencyNumeric: "",
+    currencyDecimals: null,
+    currencySymbol: "",
   },
   {
     countryNameEn: "Argentina",
@@ -223,6 +267,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇦🇷",
     countryCodeNumeric: "032",
+    currencyNumeric: "032",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "American Samoa",
@@ -241,6 +288,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇦🇸",
     countryCodeNumeric: "016",
+    currencyNumeric: "840",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Austria",
@@ -259,6 +309,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇦🇹",
     countryCodeNumeric: "040",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Australia",
@@ -277,6 +330,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇦🇺",
     countryCodeNumeric: "036",
+    currencyNumeric: "036",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Aruba",
@@ -295,6 +351,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇦🇼",
     countryCodeNumeric: "533",
+    currencyNumeric: "533",
+    currencyDecimals: 2,
+    currencySymbol: "AWG",
   },
   {
     countryNameEn: "Åland Islands",
@@ -313,6 +372,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇦🇽",
     countryCodeNumeric: "248",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Azerbaijan",
@@ -331,6 +393,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇦🇿",
     countryCodeNumeric: "031",
+    currencyNumeric: "944",
+    currencyDecimals: 2,
+    currencySymbol: "₼",
   },
   {
     countryNameEn: "Bosnia and Herzegovina",
@@ -349,6 +414,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇧🇦",
     countryCodeNumeric: "070",
+    currencyNumeric: "977",
+    currencyDecimals: 2,
+    currencySymbol: "KM",
   },
   {
     countryNameEn: "Barbados",
@@ -367,6 +435,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇧🇧",
     countryCodeNumeric: "052",
+    currencyNumeric: "052",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Bangladesh",
@@ -385,6 +456,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇧🇩",
     countryCodeNumeric: "050",
+    currencyNumeric: "050",
+    currencyDecimals: 2,
+    currencySymbol: "৳",
   },
   {
     countryNameEn: "Belgium",
@@ -403,6 +477,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇧🇪",
     countryCodeNumeric: "056",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Burkina Faso",
@@ -421,6 +498,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇧🇫",
     countryCodeNumeric: "854",
+    currencyNumeric: "952",
+    currencyDecimals: 0,
+    currencySymbol: "F CFA",
   },
   {
     countryNameEn: "Bulgaria",
@@ -439,6 +519,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇧🇬",
     countryCodeNumeric: "100",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Bahrain",
@@ -457,6 +540,9 @@ const countriesData: CountryData[] = [
     region: "Arab States",
     flag: "🇧🇭",
     countryCodeNumeric: "048",
+    currencyNumeric: "048",
+    currencyDecimals: 3,
+    currencySymbol: "BHD",
   },
   {
     countryNameEn: "Burundi",
@@ -475,6 +561,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇧🇮",
     countryCodeNumeric: "108",
+    currencyNumeric: "108",
+    currencyDecimals: 0,
+    currencySymbol: "BIF",
   },
   {
     countryNameEn: "Benin",
@@ -493,6 +582,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇧🇯",
     countryCodeNumeric: "204",
+    currencyNumeric: "952",
+    currencyDecimals: 0,
+    currencySymbol: "F CFA",
   },
   {
     countryNameEn: "Saint Barthélemy",
@@ -511,6 +603,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇧🇱",
     countryCodeNumeric: "652",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Bermuda",
@@ -529,6 +624,9 @@ const countriesData: CountryData[] = [
     region: "North America",
     flag: "🇧🇲",
     countryCodeNumeric: "060",
+    currencyNumeric: "060",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Brunei Darussalam",
@@ -547,6 +645,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇧🇳",
     countryCodeNumeric: "096",
+    currencyNumeric: "096",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Bolivia (Plurinational State of)",
@@ -565,6 +666,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇧🇴",
     countryCodeNumeric: "068",
+    currencyNumeric: "068",
+    currencyDecimals: 2,
+    currencySymbol: "Bs",
   },
   {
     countryNameEn: "Bonaire, Sint Eustatius and Saba",
@@ -583,6 +687,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇧🇶",
     countryCodeNumeric: "535",
+    currencyNumeric: "840",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Brazil",
@@ -601,6 +708,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇧🇷",
     countryCodeNumeric: "076",
+    currencyNumeric: "986",
+    currencyDecimals: 2,
+    currencySymbol: "R$",
   },
   {
     countryNameEn: "Bhutan",
@@ -619,6 +729,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇧🇹",
     countryCodeNumeric: "064",
+    currencyNumeric: "064",
+    currencyDecimals: 2,
+    currencySymbol: "BTN",
   },
   {
     countryNameEn: "Bouvet Island",
@@ -637,6 +750,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇧🇻",
     countryCodeNumeric: "074",
+    currencyNumeric: "578",
+    currencyDecimals: 2,
+    currencySymbol: "kr",
   },
   {
     countryNameEn: "Botswana",
@@ -655,6 +771,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇧🇼",
     countryCodeNumeric: "072",
+    currencyNumeric: "072",
+    currencyDecimals: 2,
+    currencySymbol: "P",
   },
   {
     countryNameEn: "Belarus",
@@ -673,6 +792,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇧🇾",
     countryCodeNumeric: "112",
+    currencyNumeric: "933",
+    currencyDecimals: 2,
+    currencySymbol: "BYN",
   },
   {
     countryNameEn: "Belize",
@@ -691,6 +813,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇧🇿",
     countryCodeNumeric: "084",
+    currencyNumeric: "084",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Canada",
@@ -751,6 +876,9 @@ const countriesData: CountryData[] = [
     region: "North America",
     flag: "🇨🇦",
     countryCodeNumeric: "124",
+    currencyNumeric: "124",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Switzerland",
@@ -769,6 +897,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇨🇭",
     countryCodeNumeric: "756",
+    currencyNumeric: "756",
+    currencyDecimals: 2,
+    currencySymbol: "CHF",
   },
   {
     countryNameEn: "Côte d'Ivoire",
@@ -787,6 +918,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇨🇮",
     countryCodeNumeric: "384",
+    currencyNumeric: "952",
+    currencyDecimals: 0,
+    currencySymbol: "F CFA",
   },
   {
     countryNameEn: "Chile",
@@ -805,6 +939,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇨🇱",
     countryCodeNumeric: "152",
+    currencyNumeric: "152",
+    currencyDecimals: 0,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Cameroon",
@@ -823,6 +960,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇨🇲",
     countryCodeNumeric: "120",
+    currencyNumeric: "950",
+    currencyDecimals: 0,
+    currencySymbol: "FCFA",
   },
   {
     countryNameEn: "China",
@@ -841,6 +981,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇨🇳",
     countryCodeNumeric: "156",
+    currencyNumeric: "156",
+    currencyDecimals: 2,
+    currencySymbol: "¥",
   },
   {
     countryNameEn: "Colombia",
@@ -859,6 +1002,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇨🇴",
     countryCodeNumeric: "170",
+    currencyNumeric: "170",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Costa Rica",
@@ -877,6 +1023,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇨🇷",
     countryCodeNumeric: "188",
+    currencyNumeric: "188",
+    currencyDecimals: 2,
+    currencySymbol: "₡",
   },
   {
     countryNameEn: "Cuba",
@@ -895,6 +1044,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇨🇺",
     countryCodeNumeric: "192",
+    currencyNumeric: "192",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Cabo Verde",
@@ -913,6 +1065,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇨🇻",
     countryCodeNumeric: "132",
+    currencyNumeric: "132",
+    currencyDecimals: 2,
+    currencySymbol: "CVE",
   },
   {
     countryNameEn: "Curaçao",
@@ -931,6 +1086,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇨🇼",
     countryCodeNumeric: "531",
+    currencyNumeric: "532",
+    currencyDecimals: 2,
+    currencySymbol: "Cg.",
   },
   {
     countryNameEn: "Christmas Island",
@@ -949,6 +1107,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇨🇽",
     countryCodeNumeric: "162",
+    currencyNumeric: "036",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Cyprus",
@@ -967,6 +1128,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇨🇾",
     countryCodeNumeric: "196",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Germany",
@@ -985,6 +1149,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇩🇪",
     countryCodeNumeric: "276",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Djibouti",
@@ -1003,6 +1170,9 @@ const countriesData: CountryData[] = [
     region: "Arab States",
     flag: "🇩🇯",
     countryCodeNumeric: "262",
+    currencyNumeric: "262",
+    currencyDecimals: 0,
+    currencySymbol: "DJF",
   },
   {
     countryNameEn: "Denmark",
@@ -1021,6 +1191,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇩🇰",
     countryCodeNumeric: "208",
+    currencyNumeric: "208",
+    currencyDecimals: 2,
+    currencySymbol: "kr",
   },
   {
     countryNameEn: "Dominica",
@@ -1039,6 +1212,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇩🇲",
     countryCodeNumeric: "212",
+    currencyNumeric: "951",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Algeria",
@@ -1057,6 +1233,9 @@ const countriesData: CountryData[] = [
     region: "Arab States",
     flag: "🇩🇿",
     countryCodeNumeric: "012",
+    currencyNumeric: "012",
+    currencyDecimals: 2,
+    currencySymbol: "DZD",
   },
   {
     countryNameEn: "Ecuador",
@@ -1075,6 +1254,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇪🇨",
     countryCodeNumeric: "218",
+    currencyNumeric: "840",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Estonia",
@@ -1093,6 +1275,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇪🇪",
     countryCodeNumeric: "233",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Egypt",
@@ -1111,6 +1296,9 @@ const countriesData: CountryData[] = [
     region: "Arab States",
     flag: "🇪🇬",
     countryCodeNumeric: "818",
+    currencyNumeric: "818",
+    currencyDecimals: 2,
+    currencySymbol: "E£",
   },
   {
     countryNameEn: "Western Sahara",
@@ -1129,6 +1317,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇪🇭",
     countryCodeNumeric: "732",
+    currencyNumeric: "504",
+    currencyDecimals: 2,
+    currencySymbol: "MAD",
   },
   {
     countryNameEn: "Eritrea",
@@ -1147,6 +1338,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇪🇷",
     countryCodeNumeric: "232",
+    currencyNumeric: "232",
+    currencyDecimals: 2,
+    currencySymbol: "ERN",
   },
   {
     countryNameEn: "Spain",
@@ -1166,6 +1360,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇪🇸",
     countryCodeNumeric: "724",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Ethiopia",
@@ -1184,6 +1381,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇪🇹",
     countryCodeNumeric: "231",
+    currencyNumeric: "230",
+    currencyDecimals: 2,
+    currencySymbol: "ETB",
   },
   {
     countryNameEn: "Finland",
@@ -1202,6 +1402,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇫🇮",
     countryCodeNumeric: "246",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Fiji",
@@ -1220,6 +1423,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇫🇯",
     countryCodeNumeric: "242",
+    currencyNumeric: "242",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Micronesia (Federated States of)",
@@ -1238,6 +1444,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇫🇲",
     countryCodeNumeric: "583",
+    currencyNumeric: "840",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "France",
@@ -1257,6 +1466,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇫🇷",
     countryCodeNumeric: "250",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Gabon",
@@ -1275,6 +1487,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇬🇦",
     countryCodeNumeric: "266",
+    currencyNumeric: "950",
+    currencyDecimals: 0,
+    currencySymbol: "FCFA",
   },
   {
     countryNameEn: "Grenada",
@@ -1293,6 +1508,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇬🇩",
     countryCodeNumeric: "308",
+    currencyNumeric: "951",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Georgia",
@@ -1311,6 +1529,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇬🇪",
     countryCodeNumeric: "268",
+    currencyNumeric: "981",
+    currencyDecimals: 2,
+    currencySymbol: "₾",
   },
   {
     countryNameEn: "French Guiana",
@@ -1329,6 +1550,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇬🇫",
     countryCodeNumeric: "254",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Guernsey",
@@ -1347,6 +1571,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇬🇬",
     countryCodeNumeric: "831",
+    currencyNumeric: "826",
+    currencyDecimals: 2,
+    currencySymbol: "£",
   },
   {
     countryNameEn: "Ghana",
@@ -1365,6 +1592,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇬🇭",
     countryCodeNumeric: "288",
+    currencyNumeric: "936",
+    currencyDecimals: 2,
+    currencySymbol: "GH₵",
   },
   {
     countryNameEn: "Gibraltar",
@@ -1383,6 +1613,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇬🇮",
     countryCodeNumeric: "292",
+    currencyNumeric: "292",
+    currencyDecimals: 2,
+    currencySymbol: "£",
   },
   {
     countryNameEn: "Greenland",
@@ -1401,6 +1634,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇬🇱",
     countryCodeNumeric: "304",
+    currencyNumeric: "208",
+    currencyDecimals: 2,
+    currencySymbol: "kr",
   },
   {
     countryNameEn: "Guinea",
@@ -1419,6 +1655,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇬🇳",
     countryCodeNumeric: "324",
+    currencyNumeric: "324",
+    currencyDecimals: 0,
+    currencySymbol: "FG",
   },
   {
     countryNameEn: "Guadeloupe",
@@ -1437,6 +1676,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇬🇵",
     countryCodeNumeric: "312",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Equatorial Guinea",
@@ -1455,6 +1697,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇬🇶",
     countryCodeNumeric: "226",
+    currencyNumeric: "950",
+    currencyDecimals: 0,
+    currencySymbol: "FCFA",
   },
   {
     countryNameEn: "Greece",
@@ -1474,6 +1719,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇬🇷",
     countryCodeNumeric: "300",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "South Georgia and the South Sandwich Islands",
@@ -1492,6 +1740,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇬🇸",
     countryCodeNumeric: "239",
+    currencyNumeric: "",
+    currencyDecimals: null,
+    currencySymbol: "",
   },
   {
     countryNameEn: "Guatemala",
@@ -1510,6 +1761,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇬🇹",
     countryCodeNumeric: "320",
+    currencyNumeric: "320",
+    currencyDecimals: 2,
+    currencySymbol: "Q",
   },
   {
     countryNameEn: "Guam",
@@ -1528,6 +1782,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇬🇺",
     countryCodeNumeric: "316",
+    currencyNumeric: "840",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Guinea-Bissau",
@@ -1546,6 +1803,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇬🇼",
     countryCodeNumeric: "624",
+    currencyNumeric: "952",
+    currencyDecimals: 0,
+    currencySymbol: "F CFA",
   },
   {
     countryNameEn: "Guyana",
@@ -1564,6 +1824,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇬🇾",
     countryCodeNumeric: "328",
+    currencyNumeric: "328",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Hong Kong",
@@ -1582,6 +1845,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇭🇰",
     countryCodeNumeric: "344",
+    currencyNumeric: "344",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Honduras",
@@ -1600,6 +1866,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇭🇳",
     countryCodeNumeric: "340",
+    currencyNumeric: "340",
+    currencyDecimals: 2,
+    currencySymbol: "L",
   },
   {
     countryNameEn: "Croatia",
@@ -1618,6 +1887,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇭🇷",
     countryCodeNumeric: "191",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Haiti",
@@ -1636,6 +1908,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇭🇹",
     countryCodeNumeric: "332",
+    currencyNumeric: "332",
+    currencyDecimals: 2,
+    currencySymbol: "HTG",
   },
   {
     countryNameEn: "Hungary",
@@ -1654,6 +1929,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇭🇺",
     countryCodeNumeric: "348",
+    currencyNumeric: "348",
+    currencyDecimals: 2,
+    currencySymbol: "Ft",
   },
   {
     countryNameEn: "Indonesia",
@@ -1672,6 +1950,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇮🇩",
     countryCodeNumeric: "360",
+    currencyNumeric: "360",
+    currencyDecimals: 2,
+    currencySymbol: "Rp",
   },
   {
     countryNameEn: "Ireland",
@@ -1690,6 +1971,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇮🇪",
     countryCodeNumeric: "372",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Israel",
@@ -1708,6 +1992,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇮🇱",
     countryCodeNumeric: "376",
+    currencyNumeric: "376",
+    currencyDecimals: 2,
+    currencySymbol: "₪",
   },
   {
     countryNameEn: "Isle of Man",
@@ -1726,6 +2013,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇮🇲",
     countryCodeNumeric: "833",
+    currencyNumeric: "826",
+    currencyDecimals: 2,
+    currencySymbol: "£",
   },
   {
     countryNameEn: "India",
@@ -1745,6 +2035,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇮🇳",
     countryCodeNumeric: "356",
+    currencyNumeric: "356",
+    currencyDecimals: 2,
+    currencySymbol: "₹",
   },
   {
     countryNameEn: "Iraq",
@@ -1763,6 +2056,9 @@ const countriesData: CountryData[] = [
     region: "Arab States",
     flag: "🇮🇶",
     countryCodeNumeric: "368",
+    currencyNumeric: "368",
+    currencyDecimals: 3,
+    currencySymbol: "IQD",
   },
   {
     countryNameEn: "Iran (Islamic Republic of)",
@@ -1781,6 +2077,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇮🇷",
     countryCodeNumeric: "364",
+    currencyNumeric: "364",
+    currencyDecimals: 2,
+    currencySymbol: "IRR",
   },
   {
     countryNameEn: "Iceland",
@@ -1799,6 +2098,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇮🇸",
     countryCodeNumeric: "352",
+    currencyNumeric: "352",
+    currencyDecimals: 0,
+    currencySymbol: "kr",
   },
   {
     countryNameEn: "Italy",
@@ -1817,6 +2119,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇮🇹",
     countryCodeNumeric: "380",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Jersey",
@@ -1835,6 +2140,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇯🇪",
     countryCodeNumeric: "832",
+    currencyNumeric: "826",
+    currencyDecimals: 2,
+    currencySymbol: "£",
   },
   {
     countryNameEn: "Jamaica",
@@ -1853,6 +2161,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇯🇲",
     countryCodeNumeric: "388",
+    currencyNumeric: "388",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Jordan",
@@ -1871,6 +2182,9 @@ const countriesData: CountryData[] = [
     region: "Arab States",
     flag: "🇯🇴",
     countryCodeNumeric: "400",
+    currencyNumeric: "400",
+    currencyDecimals: 3,
+    currencySymbol: "JOD",
   },
   {
     countryNameEn: "Japan",
@@ -1889,6 +2203,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇯🇵",
     countryCodeNumeric: "392",
+    currencyNumeric: "392",
+    currencyDecimals: 0,
+    currencySymbol: "¥",
   },
   {
     countryNameEn: "Kenya",
@@ -1907,6 +2224,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇰🇪",
     countryCodeNumeric: "404",
+    currencyNumeric: "404",
+    currencyDecimals: 2,
+    currencySymbol: "KES",
   },
   {
     countryNameEn: "Kyrgyzstan",
@@ -1925,6 +2245,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇰🇬",
     countryCodeNumeric: "417",
+    currencyNumeric: "417",
+    currencyDecimals: 2,
+    currencySymbol: "⃀",
   },
   {
     countryNameEn: "Cambodia",
@@ -1943,6 +2266,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇰🇭",
     countryCodeNumeric: "116",
+    currencyNumeric: "116",
+    currencyDecimals: 2,
+    currencySymbol: "៛",
   },
   {
     countryNameEn: "North Korea",
@@ -1961,6 +2287,9 @@ const countriesData: CountryData[] = [
     region: "Asia",
     flag: "🇰🇵",
     countryCodeNumeric: "408",
+    currencyNumeric: "408",
+    currencyDecimals: 2,
+    currencySymbol: "₩",
   },
   {
     countryNameEn: "South Korea",
@@ -1979,6 +2308,9 @@ const countriesData: CountryData[] = [
     region: "Asia",
     flag: "🇰🇷",
     countryCodeNumeric: "410",
+    currencyNumeric: "410",
+    currencyDecimals: 0,
+    currencySymbol: "₩",
   },
   {
     countryNameEn: "Kiribati",
@@ -1997,6 +2329,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇰🇮",
     countryCodeNumeric: "296",
+    currencyNumeric: "036",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Saint Kitts and Nevis",
@@ -2015,6 +2350,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇰🇳",
     countryCodeNumeric: "659",
+    currencyNumeric: "951",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Kuwait",
@@ -2033,6 +2371,9 @@ const countriesData: CountryData[] = [
     region: "Arab States",
     flag: "🇰🇼",
     countryCodeNumeric: "414",
+    currencyNumeric: "414",
+    currencyDecimals: 3,
+    currencySymbol: "KWD",
   },
   {
     countryNameEn: "Kazakhstan",
@@ -2051,6 +2392,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇰🇿",
     countryCodeNumeric: "398",
+    currencyNumeric: "398",
+    currencyDecimals: 2,
+    currencySymbol: "₸",
   },
   {
     countryNameEn: "Lebanon",
@@ -2069,6 +2413,9 @@ const countriesData: CountryData[] = [
     region: "Arab States",
     flag: "🇱🇧",
     countryCodeNumeric: "422",
+    currencyNumeric: "422",
+    currencyDecimals: 2,
+    currencySymbol: "L£",
   },
   {
     countryNameEn: "Saint Lucia",
@@ -2087,6 +2434,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇱🇨",
     countryCodeNumeric: "662",
+    currencyNumeric: "951",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Liechtenstein",
@@ -2105,6 +2455,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇱🇮",
     countryCodeNumeric: "438",
+    currencyNumeric: "756",
+    currencyDecimals: 2,
+    currencySymbol: "CHF",
   },
   {
     countryNameEn: "Sri Lanka",
@@ -2123,6 +2476,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇱🇰",
     countryCodeNumeric: "144",
+    currencyNumeric: "144",
+    currencyDecimals: 2,
+    currencySymbol: "Rs",
   },
   {
     countryNameEn: "Liberia",
@@ -2141,6 +2497,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇱🇷",
     countryCodeNumeric: "430",
+    currencyNumeric: "430",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Lesotho",
@@ -2159,6 +2518,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇱🇸",
     countryCodeNumeric: "426",
+    currencyNumeric: "426",
+    currencyDecimals: 2,
+    currencySymbol: "LSL",
   },
   {
     countryNameEn: "Lithuania",
@@ -2177,6 +2539,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇱🇹",
     countryCodeNumeric: "440",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Luxembourg",
@@ -2195,6 +2560,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇱🇺",
     countryCodeNumeric: "442",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Latvia",
@@ -2213,6 +2581,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇱🇻",
     countryCodeNumeric: "428",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Libya",
@@ -2231,6 +2602,9 @@ const countriesData: CountryData[] = [
     region: "Arab States",
     flag: "🇱🇾",
     countryCodeNumeric: "434",
+    currencyNumeric: "434",
+    currencyDecimals: 3,
+    currencySymbol: "LYD",
   },
   {
     countryNameEn: "Morocco",
@@ -2249,6 +2623,9 @@ const countriesData: CountryData[] = [
     region: "Arab States",
     flag: "🇲🇦",
     countryCodeNumeric: "504",
+    currencyNumeric: "504",
+    currencyDecimals: 2,
+    currencySymbol: "MAD",
   },
   {
     countryNameEn: "Monaco",
@@ -2267,6 +2644,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇲🇨",
     countryCodeNumeric: "492",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Montenegro",
@@ -2285,6 +2665,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇲🇪",
     countryCodeNumeric: "499",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Saint Martin (French part)",
@@ -2303,6 +2686,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇲🇫",
     countryCodeNumeric: "663",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Madagascar",
@@ -2321,6 +2707,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇲🇬",
     countryCodeNumeric: "450",
+    currencyNumeric: "969",
+    currencyDecimals: 2,
+    currencySymbol: "Ar",
   },
   {
     countryNameEn: "Mali",
@@ -2339,6 +2728,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇲🇱",
     countryCodeNumeric: "466",
+    currencyNumeric: "952",
+    currencyDecimals: 0,
+    currencySymbol: "F CFA",
   },
   {
     countryNameEn: "Myanmar",
@@ -2357,6 +2749,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇲🇲",
     countryCodeNumeric: "104",
+    currencyNumeric: "104",
+    currencyDecimals: 2,
+    currencySymbol: "K",
   },
   {
     countryNameEn: "Mongolia",
@@ -2375,6 +2770,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇲🇳",
     countryCodeNumeric: "496",
+    currencyNumeric: "496",
+    currencyDecimals: 2,
+    currencySymbol: "₮",
   },
   {
     countryNameEn: "Macao",
@@ -2393,6 +2791,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇲🇴",
     countryCodeNumeric: "446",
+    currencyNumeric: "446",
+    currencyDecimals: 2,
+    currencySymbol: "MOP",
   },
   {
     countryNameEn: "Martinique",
@@ -2411,6 +2812,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇲🇶",
     countryCodeNumeric: "474",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Mauritania",
@@ -2429,6 +2833,9 @@ const countriesData: CountryData[] = [
     region: "Arab States",
     flag: "🇲🇷",
     countryCodeNumeric: "478",
+    currencyNumeric: "929",
+    currencyDecimals: 2,
+    currencySymbol: "MRU",
   },
   {
     countryNameEn: "Montserrat",
@@ -2447,6 +2854,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇲🇸",
     countryCodeNumeric: "500",
+    currencyNumeric: "951",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Malta",
@@ -2465,6 +2875,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇲🇹",
     countryCodeNumeric: "470",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Mauritius",
@@ -2483,6 +2896,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇲🇺",
     countryCodeNumeric: "480",
+    currencyNumeric: "480",
+    currencyDecimals: 2,
+    currencySymbol: "Rs",
   },
   {
     countryNameEn: "Maldives",
@@ -2501,6 +2917,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇲🇻",
     countryCodeNumeric: "462",
+    currencyNumeric: "462",
+    currencyDecimals: 2,
+    currencySymbol: "MVR",
   },
   {
     countryNameEn: "Malawi",
@@ -2519,6 +2938,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇲🇼",
     countryCodeNumeric: "454",
+    currencyNumeric: "454",
+    currencyDecimals: 2,
+    currencySymbol: "MWK",
   },
   {
     countryNameEn: "Mexico",
@@ -2537,6 +2959,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇲🇽",
     countryCodeNumeric: "484",
+    currencyNumeric: "484",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Malaysia",
@@ -2555,6 +2980,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇲🇾",
     countryCodeNumeric: "458",
+    currencyNumeric: "458",
+    currencyDecimals: 2,
+    currencySymbol: "RM",
   },
   {
     countryNameEn: "Mozambique",
@@ -2573,6 +3001,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇲🇿",
     countryCodeNumeric: "508",
+    currencyNumeric: "943",
+    currencyDecimals: 2,
+    currencySymbol: "MZN",
   },
   {
     countryNameEn: "Namibia",
@@ -2591,6 +3022,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇳🇦",
     countryCodeNumeric: "516",
+    currencyNumeric: "516",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "New Caledonia",
@@ -2609,6 +3043,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇳🇨",
     countryCodeNumeric: "540",
+    currencyNumeric: "953",
+    currencyDecimals: 0,
+    currencySymbol: "CFPF",
   },
   {
     countryNameEn: "Norfolk Island",
@@ -2627,6 +3064,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇳🇫",
     countryCodeNumeric: "574",
+    currencyNumeric: "036",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Nigeria",
@@ -2645,6 +3085,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇳🇬",
     countryCodeNumeric: "566",
+    currencyNumeric: "566",
+    currencyDecimals: 2,
+    currencySymbol: "₦",
   },
   {
     countryNameEn: "Nicaragua",
@@ -2663,6 +3106,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇳🇮",
     countryCodeNumeric: "558",
+    currencyNumeric: "558",
+    currencyDecimals: 2,
+    currencySymbol: "C$",
   },
   {
     countryNameEn: "Norway",
@@ -2681,6 +3127,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇳🇴",
     countryCodeNumeric: "578",
+    currencyNumeric: "578",
+    currencyDecimals: 2,
+    currencySymbol: "kr",
   },
   {
     countryNameEn: "Nepal",
@@ -2699,6 +3148,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇳🇵",
     countryCodeNumeric: "524",
+    currencyNumeric: "524",
+    currencyDecimals: 2,
+    currencySymbol: "Rs",
   },
   {
     countryNameEn: "Nauru",
@@ -2717,6 +3169,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇳🇷",
     countryCodeNumeric: "520",
+    currencyNumeric: "036",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Niue",
@@ -2735,6 +3190,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇳🇺",
     countryCodeNumeric: "570",
+    currencyNumeric: "554",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "New Zealand",
@@ -2753,6 +3211,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇳🇿",
     countryCodeNumeric: "554",
+    currencyNumeric: "554",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Oman",
@@ -2771,6 +3232,9 @@ const countriesData: CountryData[] = [
     region: "Arab States",
     flag: "🇴🇲",
     countryCodeNumeric: "512",
+    currencyNumeric: "512",
+    currencyDecimals: 3,
+    currencySymbol: "OMR",
   },
   {
     countryNameEn: "Panama",
@@ -2789,6 +3253,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇵🇦",
     countryCodeNumeric: "591",
+    currencyNumeric: "590",
+    currencyDecimals: 2,
+    currencySymbol: "PAB",
   },
   {
     countryNameEn: "Peru",
@@ -2807,6 +3274,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇵🇪",
     countryCodeNumeric: "604",
+    currencyNumeric: "604",
+    currencyDecimals: 2,
+    currencySymbol: "PEN",
   },
   {
     countryNameEn: "French Polynesia",
@@ -2825,6 +3295,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇵🇫",
     countryCodeNumeric: "258",
+    currencyNumeric: "953",
+    currencyDecimals: 0,
+    currencySymbol: "CFPF",
   },
   {
     countryNameEn: "Papua New Guinea",
@@ -2843,6 +3316,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇵🇬",
     countryCodeNumeric: "598",
+    currencyNumeric: "598",
+    currencyDecimals: 2,
+    currencySymbol: "PGK",
   },
   {
     countryNameEn: "Pakistan",
@@ -2861,6 +3337,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇵🇰",
     countryCodeNumeric: "586",
+    currencyNumeric: "586",
+    currencyDecimals: 2,
+    currencySymbol: "Rs",
   },
   {
     countryNameEn: "Poland",
@@ -2879,6 +3358,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇵🇱",
     countryCodeNumeric: "616",
+    currencyNumeric: "985",
+    currencyDecimals: 2,
+    currencySymbol: "zł",
   },
   {
     countryNameEn: "Saint Pierre and Miquelon",
@@ -2897,6 +3379,9 @@ const countriesData: CountryData[] = [
     region: "North America",
     flag: "🇵🇲",
     countryCodeNumeric: "666",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Pitcairn",
@@ -2915,6 +3400,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇵🇳",
     countryCodeNumeric: "612",
+    currencyNumeric: "554",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Puerto Rico",
@@ -2933,6 +3421,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇵🇷",
     countryCodeNumeric: "630",
+    currencyNumeric: "840",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Palestine, State of",
@@ -2951,6 +3442,9 @@ const countriesData: CountryData[] = [
     region: "Arab States",
     flag: "🇵🇸",
     countryCodeNumeric: "275",
+    currencyNumeric: "",
+    currencyDecimals: null,
+    currencySymbol: "",
   },
   {
     countryNameEn: "Portugal",
@@ -2969,6 +3463,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇵🇹",
     countryCodeNumeric: "620",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Palau",
@@ -2987,6 +3484,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇵🇼",
     countryCodeNumeric: "585",
+    currencyNumeric: "840",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Paraguay",
@@ -3005,6 +3505,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇵🇾",
     countryCodeNumeric: "600",
+    currencyNumeric: "600",
+    currencyDecimals: 0,
+    currencySymbol: "₲",
   },
   {
     countryNameEn: "Qatar",
@@ -3023,6 +3526,9 @@ const countriesData: CountryData[] = [
     region: "Arab States",
     flag: "🇶🇦",
     countryCodeNumeric: "634",
+    currencyNumeric: "634",
+    currencyDecimals: 2,
+    currencySymbol: "QAR",
   },
   {
     countryNameEn: "Réunion",
@@ -3041,6 +3547,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇷🇪",
     countryCodeNumeric: "638",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Romania",
@@ -3059,6 +3568,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇷🇴",
     countryCodeNumeric: "642",
+    currencyNumeric: "946",
+    currencyDecimals: 2,
+    currencySymbol: "lei",
   },
   {
     countryNameEn: "Serbia",
@@ -3077,6 +3589,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇷🇸",
     countryCodeNumeric: "688",
+    currencyNumeric: "941",
+    currencyDecimals: 2,
+    currencySymbol: "RSD",
   },
   {
     countryNameEn: "Russia",
@@ -3095,6 +3610,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇷🇺",
     countryCodeNumeric: "643",
+    currencyNumeric: "643",
+    currencyDecimals: 2,
+    currencySymbol: "₽",
   },
   {
     countryNameEn: "Rwanda",
@@ -3113,6 +3631,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇷🇼",
     countryCodeNumeric: "646",
+    currencyNumeric: "646",
+    currencyDecimals: 0,
+    currencySymbol: "RF",
   },
   {
     countryNameEn: "Saudi Arabia",
@@ -3131,6 +3652,9 @@ const countriesData: CountryData[] = [
     region: "Arab States",
     flag: "🇸🇦",
     countryCodeNumeric: "682",
+    currencyNumeric: "682",
+    currencyDecimals: 2,
+    currencySymbol: "SAR",
   },
   {
     countryNameEn: "Solomon Islands",
@@ -3149,6 +3673,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇸🇧",
     countryCodeNumeric: "090",
+    currencyNumeric: "090",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Seychelles",
@@ -3167,6 +3694,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇸🇨",
     countryCodeNumeric: "690",
+    currencyNumeric: "690",
+    currencyDecimals: 2,
+    currencySymbol: "SCR",
   },
   {
     countryNameEn: "Sweden",
@@ -3185,6 +3715,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇸🇪",
     countryCodeNumeric: "752",
+    currencyNumeric: "752",
+    currencyDecimals: 2,
+    currencySymbol: "kr",
   },
   {
     countryNameEn: "Singapore",
@@ -3203,6 +3736,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇸🇬",
     countryCodeNumeric: "702",
+    currencyNumeric: "702",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Saint Helena, Ascension and Tristan da Cunha",
@@ -3221,6 +3757,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇸🇭",
     countryCodeNumeric: "654",
+    currencyNumeric: "654",
+    currencyDecimals: 2,
+    currencySymbol: "£",
   },
   {
     countryNameEn: "Slovenia",
@@ -3239,6 +3778,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇸🇮",
     countryCodeNumeric: "705",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Svalbard and Jan Mayen",
@@ -3257,6 +3799,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇸🇯",
     countryCodeNumeric: "744",
+    currencyNumeric: "578",
+    currencyDecimals: 2,
+    currencySymbol: "kr",
   },
   {
     countryNameEn: "Slovakia",
@@ -3275,6 +3820,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇸🇰",
     countryCodeNumeric: "703",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Sierra Leone",
@@ -3293,6 +3841,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇸🇱",
     countryCodeNumeric: "694",
+    currencyNumeric: "925",
+    currencyDecimals: 2,
+    currencySymbol: "SLE",
   },
   {
     countryNameEn: "Republic of San Marino",
@@ -3311,6 +3862,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇸🇲",
     countryCodeNumeric: "674",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Senegal",
@@ -3329,6 +3883,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇸🇳",
     countryCodeNumeric: "686",
+    currencyNumeric: "952",
+    currencyDecimals: 0,
+    currencySymbol: "F CFA",
   },
   {
     countryNameEn: "Somalia",
@@ -3347,6 +3904,9 @@ const countriesData: CountryData[] = [
     region: "Arab States",
     flag: "🇸🇴",
     countryCodeNumeric: "706",
+    currencyNumeric: "706",
+    currencyDecimals: 2,
+    currencySymbol: "SOS",
   },
   {
     countryNameEn: "Suriname",
@@ -3365,6 +3925,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇸🇷",
     countryCodeNumeric: "740",
+    currencyNumeric: "968",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "South Sudan",
@@ -3383,6 +3946,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇸🇸",
     countryCodeNumeric: "728",
+    currencyNumeric: "728",
+    currencyDecimals: 2,
+    currencySymbol: "£",
   },
   {
     countryNameEn: "Sao Tome and Principe",
@@ -3401,6 +3967,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇸🇹",
     countryCodeNumeric: "678",
+    currencyNumeric: "930",
+    currencyDecimals: 2,
+    currencySymbol: "Db",
   },
   {
     countryNameEn: "El Salvador",
@@ -3419,6 +3988,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇸🇻",
     countryCodeNumeric: "222",
+    currencyNumeric: "222",
+    currencyDecimals: 2,
+    currencySymbol: "SVC",
   },
   {
     countryNameEn: "Sint Maarten (Dutch part)",
@@ -3437,6 +4009,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇸🇽",
     countryCodeNumeric: "534",
+    currencyNumeric: "532",
+    currencyDecimals: 2,
+    currencySymbol: "Cg.",
   },
   {
     countryNameEn: "Syrian Arab Republic",
@@ -3455,6 +4030,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇸🇾",
     countryCodeNumeric: "760",
+    currencyNumeric: "760",
+    currencyDecimals: 2,
+    currencySymbol: "£",
   },
   {
     countryNameEn: "Chad",
@@ -3473,6 +4051,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇹🇩",
     countryCodeNumeric: "148",
+    currencyNumeric: "950",
+    currencyDecimals: 0,
+    currencySymbol: "FCFA",
   },
   {
     countryNameEn: "Togo",
@@ -3491,6 +4072,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇹🇬",
     countryCodeNumeric: "768",
+    currencyNumeric: "952",
+    currencyDecimals: 0,
+    currencySymbol: "F CFA",
   },
   {
     countryNameEn: "Thailand",
@@ -3509,6 +4093,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇹🇭",
     countryCodeNumeric: "764",
+    currencyNumeric: "764",
+    currencyDecimals: 2,
+    currencySymbol: "฿",
   },
   {
     countryNameEn: "Tajikistan",
@@ -3527,6 +4114,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇹🇯",
     countryCodeNumeric: "762",
+    currencyNumeric: "972",
+    currencyDecimals: 2,
+    currencySymbol: "TJS",
   },
   {
     countryNameEn: "Tokelau",
@@ -3545,6 +4135,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇹🇰",
     countryCodeNumeric: "772",
+    currencyNumeric: "554",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Timor-Leste",
@@ -3563,6 +4156,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇹🇱",
     countryCodeNumeric: "626",
+    currencyNumeric: "840",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Turkmenistan",
@@ -3581,6 +4177,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇹🇲",
     countryCodeNumeric: "795",
+    currencyNumeric: "934",
+    currencyDecimals: 2,
+    currencySymbol: "TMT",
   },
   {
     countryNameEn: "Tunisia",
@@ -3599,6 +4198,9 @@ const countriesData: CountryData[] = [
     region: "Arab States",
     flag: "🇹🇳",
     countryCodeNumeric: "788",
+    currencyNumeric: "788",
+    currencyDecimals: 3,
+    currencySymbol: "TND",
   },
   {
     countryNameEn: "Tonga",
@@ -3617,6 +4219,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇹🇴",
     countryCodeNumeric: "776",
+    currencyNumeric: "776",
+    currencyDecimals: 2,
+    currencySymbol: "T$",
   },
   {
     countryNameEn: "Turkey",
@@ -3635,6 +4240,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇹🇷",
     countryCodeNumeric: "792",
+    currencyNumeric: "949",
+    currencyDecimals: 2,
+    currencySymbol: "₺",
   },
   {
     countryNameEn: "Trinidad and Tobago",
@@ -3653,6 +4261,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇹🇹",
     countryCodeNumeric: "780",
+    currencyNumeric: "780",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Tuvalu",
@@ -3671,6 +4282,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇹🇻",
     countryCodeNumeric: "798",
+    currencyNumeric: "036",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "United Republic of Tanzania",
@@ -3689,6 +4303,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇹🇿",
     countryCodeNumeric: "834",
+    currencyNumeric: "834",
+    currencyDecimals: 2,
+    currencySymbol: "TZS",
   },
   {
     countryNameEn: "Ukraine",
@@ -3707,6 +4324,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇺🇦",
     countryCodeNumeric: "804",
+    currencyNumeric: "980",
+    currencyDecimals: 2,
+    currencySymbol: "₴",
   },
   {
     countryNameEn: "Uganda",
@@ -3725,6 +4345,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇺🇬",
     countryCodeNumeric: "800",
+    currencyNumeric: "800",
+    currencyDecimals: 0,
+    currencySymbol: "UGX",
   },
   {
     countryNameEn: "United States of America",
@@ -3743,6 +4366,9 @@ const countriesData: CountryData[] = [
     region: "North America",
     flag: "🇺🇸",
     countryCodeNumeric: "840",
+    currencyNumeric: "840",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Uruguay",
@@ -3761,6 +4387,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇺🇾",
     countryCodeNumeric: "858",
+    currencyNumeric: "858",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Uzbekistan",
@@ -3779,6 +4408,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇺🇿",
     countryCodeNumeric: "860",
+    currencyNumeric: "860",
+    currencyDecimals: 2,
+    currencySymbol: "UZS",
   },
   {
     countryNameEn: "Saint Vincent and the Grenadines",
@@ -3797,6 +4429,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇻🇨",
     countryCodeNumeric: "670",
+    currencyNumeric: "951",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Venezuela (Bolivarian Republic of)",
@@ -3815,6 +4450,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇻🇪",
     countryCodeNumeric: "862",
+    currencyNumeric: "928",
+    currencyDecimals: 2,
+    currencySymbol: "VES",
   },
   {
     countryNameEn: "Virgin Islands (British)",
@@ -3833,6 +4471,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇻🇬",
     countryCodeNumeric: "092",
+    currencyNumeric: "840",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Virgin Islands (U.S.)",
@@ -3851,6 +4492,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇻🇮",
     countryCodeNumeric: "850",
+    currencyNumeric: "840",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Vietnam",
@@ -3869,6 +4513,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇻🇳",
     countryCodeNumeric: "704",
+    currencyNumeric: "704",
+    currencyDecimals: 0,
+    currencySymbol: "₫",
   },
   {
     countryNameEn: "Vanuatu",
@@ -3887,6 +4534,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇻🇺",
     countryCodeNumeric: "548",
+    currencyNumeric: "548",
+    currencyDecimals: 0,
+    currencySymbol: "VUV",
   },
   {
     countryNameEn: "Wallis and Futuna",
@@ -3905,6 +4555,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇼🇫",
     countryCodeNumeric: "876",
+    currencyNumeric: "953",
+    currencyDecimals: 0,
+    currencySymbol: "CFPF",
   },
   {
     countryNameEn: "Samoa",
@@ -3923,6 +4576,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇼🇸",
     countryCodeNumeric: "882",
+    currencyNumeric: "882",
+    currencyDecimals: 2,
+    currencySymbol: "WST",
   },
   {
     countryNameEn: "Yemen",
@@ -3941,6 +4597,9 @@ const countriesData: CountryData[] = [
     region: "Arab States",
     flag: "🇾🇪",
     countryCodeNumeric: "887",
+    currencyNumeric: "886",
+    currencyDecimals: 2,
+    currencySymbol: "YER",
   },
   {
     countryNameEn: "Mayotte",
@@ -3959,6 +4618,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇾🇹",
     countryCodeNumeric: "175",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "South Africa",
@@ -3977,6 +4639,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇿🇦",
     countryCodeNumeric: "710",
+    currencyNumeric: "710",
+    currencyDecimals: 2,
+    currencySymbol: "R",
   },
   {
     countryNameEn: "Zambia",
@@ -3995,6 +4660,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇿🇲",
     countryCodeNumeric: "894",
+    currencyNumeric: "967",
+    currencyDecimals: 2,
+    currencySymbol: "ZK",
   },
   {
     countryNameEn: "Zimbabwe",
@@ -4013,6 +4681,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇿🇼",
     countryCodeNumeric: "716",
+    currencyNumeric: "924",
+    currencyDecimals: 2,
+    currencySymbol: "ZWG",
   },
   {
     countryNameEn: "Eswatini",
@@ -4031,6 +4702,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇸🇿",
     countryCodeNumeric: "748",
+    currencyNumeric: "748",
+    currencyDecimals: 2,
+    currencySymbol: "SZL",
   },
   {
     countryNameEn: "North Macedonia",
@@ -4049,6 +4723,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇲🇰",
     countryCodeNumeric: "807",
+    currencyNumeric: "807",
+    currencyDecimals: 2,
+    currencySymbol: "MKD",
   },
   {
     countryNameEn: "Philippines",
@@ -4067,6 +4744,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇵🇭",
     countryCodeNumeric: "608",
+    currencyNumeric: "608",
+    currencyDecimals: 2,
+    currencySymbol: "₱",
   },
   {
     countryNameEn: "Netherlands",
@@ -4085,6 +4765,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇳🇱",
     countryCodeNumeric: "528",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "United Arab Emirates",
@@ -4103,6 +4786,9 @@ const countriesData: CountryData[] = [
     region: "Arab States",
     flag: "🇦🇪",
     countryCodeNumeric: "784",
+    currencyNumeric: "784",
+    currencyDecimals: 2,
+    currencySymbol: "AED",
   },
   {
     countryNameEn: "Republic of Moldova",
@@ -4121,6 +4807,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇲🇩",
     countryCodeNumeric: "498",
+    currencyNumeric: "498",
+    currencyDecimals: 2,
+    currencySymbol: "MDL",
   },
   {
     countryNameEn: "Gambia",
@@ -4139,6 +4828,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇬🇲",
     countryCodeNumeric: "270",
+    currencyNumeric: "270",
+    currencyDecimals: 2,
+    currencySymbol: "GMD",
   },
   {
     countryNameEn: "Dominican Republic",
@@ -4157,6 +4849,9 @@ const countriesData: CountryData[] = [
     region: "South/Latin America",
     flag: "🇩🇴",
     countryCodeNumeric: "214",
+    currencyNumeric: "214",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Sudan",
@@ -4175,6 +4870,9 @@ const countriesData: CountryData[] = [
     region: "Arab States",
     flag: "🇸🇩",
     countryCodeNumeric: "729",
+    currencyNumeric: "938",
+    currencyDecimals: 2,
+    currencySymbol: "SDG",
   },
   {
     countryNameEn: "Lao People's Democratic Republic",
@@ -4193,6 +4891,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇱🇦",
     countryCodeNumeric: "418",
+    currencyNumeric: "418",
+    currencyDecimals: 2,
+    currencySymbol: "₭",
   },
   {
     countryNameEn: "Taiwan, Province of China",
@@ -4211,6 +4912,9 @@ const countriesData: CountryData[] = [
     region: "Asia & Pacific",
     flag: "🇹🇼",
     countryCodeNumeric: "158",
+    currencyNumeric: "901",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Republic of the Congo",
@@ -4229,6 +4933,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇨🇬",
     countryCodeNumeric: "178",
+    currencyNumeric: "950",
+    currencyDecimals: 0,
+    currencySymbol: "FCFA",
   },
   {
     countryNameEn: "Czechia",
@@ -4247,6 +4954,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇨🇿",
     countryCodeNumeric: "203",
+    currencyNumeric: "203",
+    currencyDecimals: 2,
+    currencySymbol: "Kč",
   },
   {
     countryNameEn: "United Kingdom",
@@ -4266,6 +4976,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇬🇧",
     countryCodeNumeric: "826",
+    currencyNumeric: "826",
+    currencyDecimals: 2,
+    currencySymbol: "£",
   },
   {
     countryNameEn: "Niger",
@@ -4284,6 +4997,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇳🇪",
     countryCodeNumeric: "562",
+    currencyNumeric: "952",
+    currencyDecimals: 0,
+    currencySymbol: "F CFA",
   },
   {
     countryNameEn: "Democratic Republic of the Congo",
@@ -4302,6 +5018,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇨🇩",
     countryCodeNumeric: "180",
+    currencyNumeric: "976",
+    currencyDecimals: 2,
+    currencySymbol: "CDF",
   },
   {
     countryNameEn: "Commonwealth of The Bahamas",
@@ -4320,6 +5039,9 @@ const countriesData: CountryData[] = [
     region: "Caribbean",
     flag: "🇧🇸",
     countryCodeNumeric: "044",
+    currencyNumeric: "044",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Cocos (Keeling) Islands",
@@ -4338,6 +5060,9 @@ const countriesData: CountryData[] = [
     region: "Australia",
     flag: "🇨🇨",
     countryCodeNumeric: "166",
+    currencyNumeric: "036",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Central African Republic",
@@ -4356,6 +5081,9 @@ const countriesData: CountryData[] = [
     region: "Africa",
     flag: "🇨🇫",
     countryCodeNumeric: "140",
+    currencyNumeric: "950",
+    currencyDecimals: 0,
+    currencySymbol: "FCFA",
   },
   {
     countryNameEn: "Cook Islands",
@@ -4374,6 +5102,9 @@ const countriesData: CountryData[] = [
     region: "South Pacific Ocean",
     flag: "🇨🇰",
     countryCodeNumeric: "184",
+    currencyNumeric: "554",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Falkland Islands",
@@ -4392,6 +5123,9 @@ const countriesData: CountryData[] = [
     region: "South Atlantic Ocean",
     flag: "🇫🇰",
     countryCodeNumeric: "238",
+    currencyNumeric: "238",
+    currencyDecimals: 2,
+    currencySymbol: "£",
   },
   {
     countryNameEn: "Faroe Islands",
@@ -4410,6 +5144,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇫🇴",
     countryCodeNumeric: "234",
+    currencyNumeric: "208",
+    currencyDecimals: 2,
+    currencySymbol: "kr",
   },
   {
     countryNameEn: "Territory of Heard Island and McDonald Islands",
@@ -4428,6 +5165,9 @@ const countriesData: CountryData[] = [
     region: "Indian Ocean",
     flag: "🇭🇲",
     countryCodeNumeric: "334",
+    currencyNumeric: "036",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "British Indian Ocean Territory",
@@ -4446,6 +5186,9 @@ const countriesData: CountryData[] = [
     region: "Indian Ocean",
     flag: "🇮🇴",
     countryCodeNumeric: "086",
+    currencyNumeric: "840",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Comoros",
@@ -4464,6 +5207,9 @@ const countriesData: CountryData[] = [
     region: "Indian Ocean",
     flag: "🇰🇲",
     countryCodeNumeric: "174",
+    currencyNumeric: "174",
+    currencyDecimals: 0,
+    currencySymbol: "CF",
   },
   {
     countryNameEn: "Cayman Islands",
@@ -4482,6 +5228,9 @@ const countriesData: CountryData[] = [
     region: "Caribbean Sea",
     flag: "🇰🇾",
     countryCodeNumeric: "136",
+    currencyNumeric: "136",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Republic of the Marshall Islands",
@@ -4500,6 +5249,9 @@ const countriesData: CountryData[] = [
     region: "Pacific Ocean",
     flag: "🇲🇭",
     countryCodeNumeric: "584",
+    currencyNumeric: "840",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Commonwealth of the Northern Mariana Islands",
@@ -4518,6 +5270,9 @@ const countriesData: CountryData[] = [
     region: "Pacific Ocean",
     flag: "🇲🇵",
     countryCodeNumeric: "580",
+    currencyNumeric: "840",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Turks and Caicos Islands",
@@ -4536,6 +5291,9 @@ const countriesData: CountryData[] = [
     region: "Atlantic Ocean",
     flag: "🇹🇨",
     countryCodeNumeric: "796",
+    currencyNumeric: "840",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "French Southern and Antarctic Lands",
@@ -4554,6 +5312,9 @@ const countriesData: CountryData[] = [
     region: "Indian Ocean",
     flag: "🇹🇫",
     countryCodeNumeric: "260",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "United States Minor Outlying Islands",
@@ -4572,6 +5333,9 @@ const countriesData: CountryData[] = [
     region: "Pacific Ocean",
     flag: "🇺🇲",
     countryCodeNumeric: "581",
+    currencyNumeric: "840",
+    currencyDecimals: 2,
+    currencySymbol: "$",
   },
   {
     countryNameEn: "Holy See",
@@ -4590,6 +5354,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇻🇦",
     countryCodeNumeric: "336",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
   {
     countryNameEn: "Republic of Kosovo",
@@ -4608,6 +5375,9 @@ const countriesData: CountryData[] = [
     region: "Europe",
     flag: "🇽🇰",
     countryCodeNumeric: "",
+    currencyNumeric: "978",
+    currencyDecimals: 2,
+    currencySymbol: "€",
   },
 ];
 
