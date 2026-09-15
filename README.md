@@ -1,411 +1,307 @@
 # country-codes-list
 
-Module with list of codes per country, including country codes, currency codes, and more.
+A list of 250 countries with ISO codes, currencies, languages, phone codes and tax identifiers.
 
-> [!WARNING]
-> Release v3.0.0 introduces breaking changes: `countryCallingCode` no longer folds in national area codes, `areaCodes` is now a required `string[]`, and several functions narrow their key parameter to string-valued properties. See the [v2 → v3 migration guide](#migration-guide-v2x-to-v30).
->
-> Release v2.0.0 introduced breaking changes with full TypeScript support and automated testing/publishing.
+[![npm version](https://img.shields.io/npm/v/country-codes-list)](https://www.npmjs.com/package/country-codes-list)
+[![CI](https://github.com/Synergy-Shock/country-codes-list/actions/workflows/ci.yml/badge.svg)](https://github.com/Synergy-Shock/country-codes-list/actions/workflows/ci.yml)
+[![license](https://img.shields.io/npm/l/country-codes-list)](https://github.com/Synergy-Shock/country-codes-list/blob/master/LICENSE)
+[![npm downloads](https://img.shields.io/npm/dm/country-codes-list)](https://www.npmjs.com/package/country-codes-list)
 
-> [!NOTE]
-> v3.1.1 fixes a bug where the public API could mutate the shared dataset. `all()` now returns a fresh array on every call (so `all() === all()` is no longer `true`), and sorting or mutating that array — or the one from `customArray({ sortDataBy })` — no longer reorders or corrupts the data seen by `filter`, `findOne`, `customList` and every other consumer. If your code relied on reference equality between calls to `all()`, compare contents instead.
+## Why this package
 
-## Features
+- One record per country. It includes data that other packages do not ship together: TIN/VAT identifiers, local-language names, alternative codes (`UK`, `EL`) and national phone number lengths.
+- Zero runtime dependencies.
+- TypeScript types for every record and every function.
+- A test suite that checks dataset-wide invariants (unique codes, valid ISO 4217, ITU-T E.164 limits).
+- The same data as JSON and CSV files, on npm and on a CDN.
 
-- 2-letter country code (ISO 3166-1 alpha-2): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
-- 3-letter country code (ISO 3166-1 alpha-3): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3)
-- Flag: the country's flag emoji (`flag`), derived from the alpha-2 code
-- Numeric country code (`countryCodeNumeric`, ISO 3166-1 numeric): three digits with leading zeros kept (`"004"` for Afghanistan, `"840"` for the United States), empty only for Kosovo (`XK`), which has no ISO assignment. Resolve one with [`findOneByCode("840")`](#api-details--findonebycode-method)
-- Alternative country codes (`altCodes`): non-primary 2-letter codes that still identify a country in the wild — `UK` for the United Kingdom (whose ISO code is `GB`) and `EL` for Greece (whose ISO code is `GR`). Resolve any of them with [`findOneByCode`](#api-details--findonebycode-method)
-- Country Name: Each name in english and in the local country language
-- Currency Code (ISO 4217): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/ISO_4217)
-- Currency Name (ISO 4217): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/ISO_4217)
-- Currency Numeric (`currencyNumeric`, ISO 4217 numeric): three digits (`"840"` for USD, `"978"` for EUR), empty when the country has no currency. From the ISO 4217 maintenance agency's [List One](https://www.six-group.com/en/products-services/financial-information/data-standards.html)
-- Currency Decimals (`currencyDecimals`, ISO 4217 minor units): `2` for most currencies, `0` for JPY or XOF, `3` for BHD or KWD; `null` when there is no currency. Same source as above
-- Currency Symbol (`currencySymbol`): the CLDR English narrow symbol — `"$"`, `"€"`, `"£"`, `"R$"`, `"₹"` — from Node's built-in ICU. Narrow means **not disambiguated**: 29 currencies render as `"$"` (USD, CAD, AUD, MXN, HKD, …), and `"£"`, `"kr"`, `"Rs"`, `"¥"` and `"₩"` are shared too, so never use the symbol as a key. Falls back to the ISO code when CLDR has no symbol (`"CHF"`, `"ZWG"`); empty when there is no currency
-- TIN Code (Taxpayer Identification Number, also known as VAT in some countries): Obtained from [Wikipedia](https://en.wikipedia.org/wiki/VAT_identification_number). **Only populated for a subset**: 64 of the 250 records carry a `tinName` and 62 a `tinType`; the rest are empty strings
-- TIN Name: Obtained from [Wikipedia](https://en.wikipedia.org/wiki/VAT_identification_number)
-- Official language code (usually from ISO 639-1, or ISO 639-3 otherwise): Obtained from [Open Street Map](https://wiki.openstreetmap.org/wiki/Nominatim/Country_Codes). Returns only the first official language code per country
-- Official language name: Each name in english and in the local country language
-- Country Calling Code: The phone calling code for the country. Obtained from [Wikipedia](https://en.wikipedia.org/wiki/List_of_country_calling_codes#Alphabetical_listing_by_country_or_region). This is the ITU-T E.164 country code only (1-3 digits, no `+`, no spaces) — national area codes are never folded into it.
-- Area Codes: The national area codes that follow the calling code, as `string[]`. **Partially populated** — an empty array means "not recorded", not "this country has no area codes". Every member of the [North American Numbering Plan](https://en.wikipedia.org/wiki/North_American_Numbering_Plan) carries its area code (Jamaica `["876", "658"]`, Barbados `["246"]`, …) except the US, whose hundreds of area codes are out of scope here (Canada's are populated, a pre-existing exception), and UM, which shares `+1` with an empty array. Among the other shared calling codes, CC and CX both carry `["8"]` under `61` (Western Australia's area code — they differ only at the exchange level) and SJ carries `["79"]` under `47`; AU has no area codes recorded, AX and FI both use `358`, and GB, GG, IM and JE all use `44`, each with an empty array.
-- National Number Lengths: The possible lengths of the national significant number — every digit after the calling code, area code included — as a sorted `number[]`. Derived from Google's [libphonenumber](https://github.com/google/libphonenumber) `PhoneNumberMetadata.xml` (Apache-2.0), covering fixed-line and mobile ranges only; toll-free, premium-rate, VoIP, pager and UAN numbers are excluded. It is a **set, not a range** — the Netherlands is `[9, 11]` and South Korea is `[5, 6, 8, 9, 10]` — so validate with `includes`, never with a min/max comparison. **Partially populated** — seven uninhabited territories (`AQ`, `BV`, `GS`, `HM`, `PN`, `TF`, `UM`) carry an empty array, meaning "not recorded". See [`nationalNumberLengths`](#api-details--nationalnumberlengths)
-- Region: The Regional Classifications are from the [International Telecommunications Union](http://www.itu.int/ITU-D/ict/definitions/regions/index.html). Seen [here](https://meta.wikimedia.org/wiki/List_of_countries_by_regional_classification)
-
-## Installation
-
-Install the package via npm:
+## Install
 
 ```bash
-npm install --save country-codes-list
+npm install country-codes-list
 ```
 
-## Build & Test
-
-To compile the package, run:
-
-```bash
-npm run build
-```
-
-The compiled output will be in the `dist/` folder.
-
-To run tests:
-
-```bash
-npm test
-```
-
-## Migration Guide (v1.x to v2.0)
-
-### Breaking Changes
-
-1. **TypeScript Types**: If you were using types:
-
-   ```typescript
-   // Old (v1.x)
-   import { CountryProperty } from "country-codes-list";
-   const prop: CountryProperty = CountryProperty.countryCode;
-
-   // New (v2.0)
-   import type { CountryProperty } from "country-codes-list";
-   const prop: CountryProperty = "countryCode";
-   ```
-
-2. **Module Imports**: The package ships as CommonJS with named exports. `import` works through Node's CommonJS interop (and through bundlers); there is no native ESM build:
-
-   ```javascript
-   // CommonJS
-   const countryCodes = require("country-codes-list");
-
-   // import syntax, resolved through CommonJS interop
-   import * as countryCodes from "country-codes-list";
-   import { findOne } from "country-codes-list";
-   ```
-
-3. **Stricter Types**: Some functions now have stricter type checking:
-   ```typescript
-   // This now requires valid country property keys
-   countryCodes.filter("invalidKey", "value"); // TypeScript error
-   ```
-
-## Migration Guide (v2.x to v3.0)
-
-### Breaking Changes
-
-1. **`countryCallingCode` is now the ITU-T E.164 country code only** — national area codes are no longer folded in. Several countries changed value, most notably the [NANP](https://en.wikipedia.org/wiki/North_American_Numbering_Plan) members that used to carry their area code:
-
-   ```js
-   // Old (v2.x)
-   countryCodes.findOne("countryCode", "JM").countryCallingCode; // '876'
-
-   // New (v3.0)
-   countryCodes.findOne("countryCode", "JM").countryCallingCode; // '1'
-   countryCodes.findOne("countryCode", "JM").areaCodes; // ['876', '658']
-   ```
-
-   If you relied on the old value to dial a full number, concatenate the calling code with an area code: `` `+${cc}${areaCodes[0]}` ``.
-
-2. **`areaCodes` is now a required `string[]`** (previously an optional `any[]`). It is **partially populated** — an empty array means "not recorded", not "no area codes". Every NANP member except the US and UM is populated, and so are CC, CX and SJ; other shared calling codes (`44`, `358`) are not yet.
-
-3. **Key parameters narrowed to `CountryScalarProperty`.** `filter`, `findOne`, `customList`, `customGroupedList` and `customArray`'s `sortDataBy` no longer accept array-valued properties (`altCodes`, `areaCodes`). This was already broken at runtime; it is now a compile-time error:
-
-   ```typescript
-   // Old (v2.x): type-checked but returned garbage at runtime
-   countryCodes.customList("altCodes", "{countryCode}");
-
-   // New (v3.0): TypeScript error
-   // To look up by an alternative code, use findOneByCode instead:
-   countryCodes.findOneByCode("UK").countryCode; // 'GB'
-   ```
-
-## Usage
-
-This package can be used in both CommonJS (JavaScript) and TypeScript environments.
-
-### CommonJS
+The package is CommonJS with named exports. `import` works through Node's CommonJS interop. There is no native ESM build.
 
 ```js
 const countryCodes = require("country-codes-list");
-
-const myCountryCodesObject = countryCodes.customList(
-  "countryCode",
-  "[{countryCode}] {countryNameEn}: +{countryCallingCode}"
-);
-
-console.log(myCountryCodesObject);
-```
-
-### TypeScript
-
-```ts
+// or
 import * as countryCodes from "country-codes-list";
-
-const myCountryCodesObject = countryCodes.customList(
-  "countryCode",
-  "[{countryCode}] {countryNameEn}: +{countryCallingCode}"
-);
-console.log(myCountryCodesObject);
+import { findOneByCode } from "country-codes-list";
 ```
 
-### API Details – all Method
+## Quick start
 
-Returns every country in dataset order, as a fresh array on every call. The country objects inside are shared with the rest of the API, so treat them as read-only.
-
-```js
-const countryCodes = require("country-codes-list");
-
-countryCodes.all().length; // 250
-countryCodes.all()[0].countryNameEn; // 'Andorra'
-```
-
-### API Details – filter Method
-
-Returns every country whose property equals the value exactly. The key must be a string-valued property (`CountryScalarProperty`).
-
-```js
-const countryCodes = require("country-codes-list");
-
-countryCodes.filter("currencyCode", "XCG").map((c) => c.countryCode);
-// => ['CW', 'SX']
-```
-
-### API Details – findOne Method
-
-Returns the first country whose property equals the value exactly, or `undefined`. Same key rules as `filter`. For case-insensitive lookups that also match `altCodes`, use [`findOneByCode`](#api-details--findonebycode-method).
-
-```js
-const countryCodes = require("country-codes-list");
-
-countryCodes.findOne("countryCodeAlpha3", "ARG").countryNameEn; // 'Argentina'
-countryCodes.findOne("countryCode", "ZZ"); // undefined
-```
-
-### API Details – findOneByCode Method
-
-Resolves a 2- or 3-letter country code, or an ISO 3166-1 numeric code, to a country, case-insensitively, matching the official ISO 3166-1 alpha-2 and alpha-3 codes **and** the alternative codes in `altCodes`.
-
-Use it when the code comes from somewhere you don't control — a browser or OS locale, an EU VAT number, an upstream API, a legacy database — where `UK` shows up as often as `GB`:
+Look up a country by any code:
 
 ```js
 const countryCodes = require("country-codes-list");
 
 countryCodes.findOneByCode("UK").countryCode; // 'GB'
-countryCodes.findOneByCode("gbr").countryCode; // 'GB'
-countryCodes.findOneByCode("EL").countryCode; // 'GR'
-countryCodes.findOneByCode("ZZ"); // undefined
+countryCodes.findOneByCode("840").countryNameEn; // 'United States of America'
 ```
 
-It also resolves ISO 3166-1 **numeric** codes — a string of exactly three ASCII digits, leading zeros included, as they appear in `countryCodeNumeric`:
+Build the options of a `<select>` element:
 
 ```js
-countryCodes.findOneByCode("840").countryCode; // 'US'
-countryCodes.findOneByCode("004").countryCode; // 'AF'
-countryCodes.findOneByCode("4"); // undefined — must be zero-padded
+countryCodes.customArray(
+  { name: "{countryNameEn}", value: "{countryCode}" },
+  { sortBy: "name" }
+);
+// [{ name: 'Afghanistan', value: 'AF' }, { name: 'Åland Islands', value: 'AX' }, ...]
 ```
 
-Input is trimmed and must be 2 or 3 ASCII letters (or 3 ASCII digits for a numeric code); anything else returns `undefined`. The validation happens *before* uppercasing on purpose — Unicode case mapping turns `"ß"` into `"SS"` and `"ı"` into `"I"`, so validating afterwards would let junk input resolve to real countries.
-
-Note that `altCodes`, `areaCodes` and `nationalNumberLengths` hold arrays, so they can't be used as lookup or list keys. `filter`, `findOne` and `customList` accept only string-valued properties (the exported `CountryScalarProperty` type); reach for `findOneByCode` to search `altCodes`.
-
-`UK` is [exceptionally reserved](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Exceptional_reservations) in ISO 3166-1 at the United Kingdom's request; `EL` is the European Commission's code for Greece. Neither replaces the official code — `findOne("countryCode", "UK")` still returns `undefined`, and `countryCode` remains `GB`/`GR`.
-
-### API Details – nationalNumberLengths
-
-`nationalNumberLengths` answers "how many digits should this phone number have?" without pulling in a full phone-number library. It holds the possible lengths of the **national significant number** — the digits that follow the E.164 calling code:
+Group countries by calling code:
 
 ```js
-const countryCodes = require("country-codes-list");
-
-const gb = countryCodes.findOneByCode("GB");
-gb.nationalNumberLengths; // [9, 10]
-gb.nationalNumberLengths.includes("2079460958".length); // true
+countryCodes.customGroupedList("countryCallingCode", "{countryCode}")["1"];
+// ['AG', 'AI', 'AS', 'BB', 'BM', 'CA', 'DM', 'GD', 'GU', 'JM', 'KN', 'LC',
+//  'MS', 'PR', 'SX', 'TT', 'US', 'VC', 'VG', 'VI', 'DO', 'BS', 'KY', 'MP',
+//  'TC', 'UM']
 ```
 
-Two things are easy to get wrong:
+## Data fields
 
-- **The area code is counted, the trunk prefix is not.** Great Britain's `020 7946 0958` is dialled domestically with a leading `0`, but the national significant number is `2079460958` — ten digits, area code included. Strip the trunk prefix before comparing.
-- **It is a set, not a range.** Numbering plans have holes. The Netherlands is `[9, 11]`, so a 10-digit Dutch number is invalid even though it sits between the two:
+Each record is a `CountryData` object. The example column shows the `US` record.
+
+| Field | Type | Example | Notes and source |
+| --- | --- | --- | --- |
+| `countryNameEn` | `string` | `"United States of America"` | English name. |
+| `countryNameLocal` | `string` | `"United States of America"` | Name in the local language. |
+| `countryCode` | `string` | `"US"` | [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2). Unique. |
+| `countryCodeAlpha3` | `string` | `"USA"` | [ISO 3166-1 alpha-3](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3). Unique. |
+| `countryCodeNumeric` | `string` | `"840"` | ISO 3166-1 numeric, three digits with leading zeros (`"004"` for AF). Empty only for `XK` (Kosovo). |
+| `altCodes` | `string[]` (optional) | absent | Other 2-letter codes in use. Only `GB` (`["UK"]`) and `GR` (`["EL"]`) have it. Use `findOneByCode` to search it. |
+| `currencyCode` | `string` | `"USD"` | [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) code. Empty for `AQ` (Antarctica). |
+| `currencyNameEn` | `string` | `"United States dollar"` | ISO 4217 English name. Empty for `AQ`. |
+| `currencyNumeric` | `string` | `"840"` | ISO 4217 numeric, three digits. Empty for `AQ`. Source: [ISO 4217 List One](https://www.six-group.com/en/products-services/financial-information/data-standards.html). |
+| `currencyDecimals` | `number \| null` | `2` | ISO 4217 minor units: `0` for JPY, `3` for BHD. `null` for `AQ`. Same source. |
+| `currencySymbol` | `string` | `"$"` | CLDR English narrow symbol from Node's ICU. Not unique. Falls back to the code (`"CHF"`). Empty for `AQ`. |
+| `tinType` | `string` | `"EIN"` | Short name of the tax identifier. Populated for 62 of 250 records. Source: [Wikipedia](https://en.wikipedia.org/wiki/VAT_identification_number). |
+| `tinName` | `string` | `"Tax Identification Number"` | Full name of the tax identifier. Populated for 64 of 250 records. Same source. |
+| `officialLanguageCode` | `string` | `"en"` | ISO 639-1 code of the first official language. ISO 639-3 when the language has no 639-1 code. Source: [OSM Nominatim](https://wiki.openstreetmap.org/wiki/Nominatim/Country_Codes). |
+| `officialLanguageNameEn` | `string` | `"English"` | English name of that language. |
+| `officialLanguageNameLocal` | `string` | `"English"` | Name of that language in the language itself. |
+| `countryCallingCode` | `string` | `"1"` | ITU-T E.164 country code, 1 to 3 digits, no `+`. Source: [Wikipedia](https://en.wikipedia.org/wiki/List_of_country_calling_codes). |
+| `areaCodes` | `string[]` | `[]` | National area codes after the calling code. Populated for [NANP](https://en.wikipedia.org/wiki/North_American_Numbering_Plan) members (not US or UM), plus `CC`, `CX` and `SJ`. An empty array means "not recorded". |
+| `nationalNumberLengths` | `number[]` | `[10]` | Possible digit counts of the national number, sorted. Empty for `AQ`, `BV`, `GS`, `HM`, `PN`, `TF`, `UM`. Source: [libphonenumber](https://github.com/google/libphonenumber) (fixed-line and mobile only). |
+| `region` | `string` | `"North America"` | One of six values adapted from the [ITU regions](https://www.itu.int/en/ITU-D/Statistics/Pages/definitions/regions.aspx). |
+| `flag` | `string` | `"🇺🇸"` | Flag emoji, derived from `countryCode`. |
+
+## Things to know
+
+**`nationalNumberLengths` is a set, not a range.** Numbering plans have holes. The Netherlands is `[9, 11]`, so a 10-digit Dutch number is not valid. Use `includes`, never a min/max comparison.
 
 ```js
 const nl = countryCodes.findOneByCode("NL").nationalNumberLengths; // [9, 11]
-
-nl.includes(10); // false — correct
-10 >= Math.min(...nl) && 10 <= Math.max(...nl); // true — wrong
+nl.includes(10); // false, correct
+10 >= Math.min(...nl) && 10 <= Math.max(...nl); // true, wrong
 ```
 
-The values are keyed by country rather than by calling code because countries sharing a calling code genuinely differ: on `+44`, Great Britain is `[9, 10]` while Guernsey, the Isle of Man and Jersey are all `[10]`.
-
-Scope: fixed-line and mobile ranges only. A toll-free or premium-rate number (a UK `0800`, say) is not guaranteed to match. Germany is the widest plan at `[5 … 15]`, because direct-dial-in extensions are appended to the subscriber number.
-
-Being array-valued, it is not a usable `customList` placeholder — `{nationalNumberLengths}` is left in the output verbatim. Read it off `all()`, `findOne` or `findOneByCode` instead.
-
-### API Details – customList Method
-
-- The first parameter is the key used for the returned object's property.
-- The second parameter is a string with placeholders (in `{placeholder}` format) replaced by corresponding country properties.
-
-The available placeholders are:
-
-- `countryNameEn`
-- `countryNameLocal`
-- `countryCode`
-- `countryCodeAlpha3`
-- `currencyCode`
-- `currencyNameEn`
-- `tinType`
-- `tinName`
-- `officialLanguageCode`
-- `officialLanguageNameEn`
-- `officialLanguageNameLocal`
-- `countryCallingCode`
-- `region`
-- `flag`
-- `countryCodeNumeric`
-- `currencyNumeric`
-- `currencyDecimals` (a number; left verbatim for the records with no currency, where it is `null`)
-- `currencySymbol`
-
-`altCodes`, `areaCodes` and `nationalNumberLengths` hold arrays and are **not** substituted — a `{areaCodes}` or `{nationalNumberLengths}` placeholder is left in the output verbatim, and so is any unknown placeholder. Array fields are also rejected as the list key, which is a compile-time error in TypeScript (see `CountryScalarProperty`).
-
-> [!IMPORTANT]
-> The key must be **unique** across countries. `countryCode` and `countryCodeAlpha3` are; `countryCallingCode`, `currencyCode`, `region` and `officialLanguageCode` are not. Keying on a non-unique property makes countries overwrite each other and only the last one survives — use [`customGroupedList`](#api-details--customgroupedlist-method) instead.
-
-#### Example
+**The area code is counted, the trunk prefix is not.** The British number `020 7946 0958` has a national number of `2079460958`. That is 10 digits, area code included. Remove the leading `0` before you compare.
 
 ```js
-const countryCodes = require("country-codes-list");
-
-const myCountryCodesObject = countryCodes.customList(
-  "countryCode",
-  "[{countryCode}] {countryNameEn}: +{countryCallingCode}"
-);
+countryCodes.findOneByCode("GB").nationalNumberLengths.includes("2079460958".length); // true
 ```
 
-This will return an object like this one. Keys follow **dataset order**, which is not alphabetical: most records are sorted by code, but 33 countries (SZ, MK, PH, NL, AE, …, XK) are appended at the end and KI/KN sit after KR. Sort the keys yourself if you need a particular order.
+**`currencySymbol` is not unique.** 29 currencies show `"$"` (USD, CAD, AUD, MXN and more). `"£"`, `"kr"`, `"¥"` and `"₩"` are also shared. Do not use the symbol as a key.
+
+**`customList` keys must be unique.** `countryCode` and `countryCodeAlpha3` are unique. `countryCallingCode`, `currencyCode`, `region` and `officialLanguageCode` are not. With a shared key, only the last country survives. Use `customGroupedList` for shared keys.
+
+**Array fields are not keys or placeholders.** `altCodes`, `areaCodes` and `nationalNumberLengths` are arrays. `filter`, `findOne`, `customList`, `customGroupedList` and `sortDataBy` reject them (a TypeScript error). A placeholder such as `{areaCodes}` stays in the output as written.
+
+**`all()` returns a new array on each call.** `all() === all()` is `false`. You can sort or change the returned array without effect on the dataset. The country objects inside are shared. Treat them as read-only.
+
+**Dataset order is not alphabetical.** Most records are sorted by `countryCode`. 33 records (`SZ`, `MK`, `PH`, `NL`, `AE`, ..., `XK`) come at the end, and `KI`, `KN` come after `KR`. If you need a specific order, sort the result.
+
+**`findOneByCode` validates before it uppercases.** Input must be 2 or 3 ASCII letters, or 3 ASCII digits, after trim. All other input returns `undefined`. Unicode case mapping (`"ß"` to `"SS"`) cannot make a valid code from invalid input.
+
+**`UK` and `EL` are not ISO codes.** `findOneByCode("UK")` returns the United Kingdom, but `countryCode` stays `"GB"`. `findOne("countryCode", "UK")` returns `undefined`.
+
+**`region` has six values.** `Africa`, `Arab States`, `Asia & Pacific`, `Europe`, `North America` and `South/Latin America`. They follow the ITU classification, with two changes: ITU's "The Americas" is split in two, and ITU's "CIS" countries are placed in `Europe` or `Asia & Pacific`.
+
+## API reference
+
+All examples use `const countryCodes = require("country-codes-list");`.
+
+### `all()`
+
+```ts
+all(): CountryData[]
+```
+
+Returns every country in dataset order, as a new array.
 
 ```js
-{
-    'AD': '[AD] Andorra: +376',
-    'AF': '[AF] Afghanistan: +93',
-    'AG': '[AG] Antigua and Barbuda: +1',
-    'AI': '[AI] Anguilla: +1',
-    'AL': '[AL] Albania: +355',
-    'AM': '[AM] Armenia: +374',
-    'AO': '[AO] Angola: +244',
-    'AQ': '[AQ] Antarctica: +672',
-    'AR': '[AR] Argentina: +54',
-    'AS': '[AS] American Samoa: +1',
-    'AT': '[AT] Austria: +43',
-    'AU': '[AU] Australia: +61',
-    'AW': '[AW] Aruba: +297',
-    'AX': '[AX] Åland Islands: +358',
-    ...
-}
+countryCodes.all().length; // 250
+countryCodes.all()[0].countryNameEn; // 'Andorra'
 ```
 
-### API Details – customGroupedList Method
+### `filter(key, value)`
 
-Same signature as `customList`, but each key maps to an **array** of every matching country instead of just the last one. Use it whenever several countries share the key — the United States, Canada and the Caribbean all answer to `+1`, and the whole euro zone shares `EUR`.
+```ts
+filter(key: CountryScalarProperty, value: string): CountryData[]
+```
+
+Returns every country where `key` equals `value` exactly.
 
 ```js
-const countryCodes = require("country-codes-list");
-
-// customList: one country per calling code — the other 25 are lost
-countryCodes.customList("countryCallingCode", "{countryCode}")["1"];
-// => 'UM'
-
-// customGroupedList: all of them
-countryCodes.customGroupedList("countryCallingCode", "{countryCode}")["1"];
-// => ['AG', 'AI', 'AS', 'BB', 'BM', 'CA', 'DM', 'GD', 'GU', 'JM', 'KN', 'LC',
-//     'MS', 'PR', 'SX', 'TT', 'US', 'VC', 'VG', 'VI', 'DO', 'BS', 'KY', 'MP',
-//     'TC', 'UM']
+countryCodes.filter("currencyCode", "XCG").map((c) => c.countryCode);
+// ['CW', 'SX']
 ```
 
-It takes the same third `{ filter }` option:
+### `findOne(key, value)`
+
+```ts
+findOne(key: CountryScalarProperty, value: string): CountryData | undefined
+```
+
+Returns the first country where `key` equals `value` exactly. The comparison is case-sensitive and ignores `altCodes`.
+
+```js
+countryCodes.findOne("countryCodeAlpha3", "ARG").countryNameEn; // 'Argentina'
+countryCodes.findOne("countryCode", "ZZ"); // undefined
+```
+
+### `findOneByCode(code)`
+
+```ts
+findOneByCode(code: string): CountryData | undefined
+```
+
+Resolves an alpha-2, alpha-3, alternative or numeric code to a country. The match is case-insensitive and ignores surrounding spaces. Official codes win over alternative codes. Use it for codes from a browser locale, a VAT number or an external API.
+
+```js
+countryCodes.findOneByCode("UK").countryCode; // 'GB'
+countryCodes.findOneByCode("gbr").countryCode; // 'GB'
+countryCodes.findOneByCode("EL").countryCode; // 'GR'
+countryCodes.findOneByCode("004").countryCode; // 'AF'
+countryCodes.findOneByCode("4"); // undefined, numeric codes need three digits
+countryCodes.findOneByCode("ZZ"); // undefined
+```
+
+### `customList(key?, label?, options?)`
+
+```ts
+customList(
+  key?: CountryScalarProperty,   // default "countryCode"
+  label?: string,                // default "{countryNameEn} ({countryCode})"
+  options?: { filter?: (country: CountryData) => boolean }
+): Record<string, string>
+```
+
+Returns an object with one entry per country. `key` selects the property that becomes the object key. `label` is a template. Each `{placeholder}` is replaced with the value of that property. Unknown placeholders and array fields stay as written.
+
+```js
+countryCodes.customList("countryCode", "[{countryCode}] {countryNameEn}: +{countryCallingCode}");
+// {
+//   AD: '[AD] Andorra: +376',
+//   AF: '[AF] Afghanistan: +93',
+//   AG: '[AG] Antigua and Barbuda: +1',
+//   ...
+// }
+```
+
+### `customGroupedList(key?, label?, options?)`
+
+```ts
+customGroupedList(
+  key?: CountryScalarProperty,   // default "countryCallingCode"
+  label?: string,                // default "{countryNameEn} ({countryCode})"
+  options?: { filter?: (country: CountryData) => boolean }
+): Partial<Record<string, string[]>>
+```
+
+Same as `customList`, but each key maps to an array of all matching countries. Groups keep dataset order. A key that no country matched is absent, so the type is `Partial`.
 
 ```js
 countryCodes.customGroupedList("region", "{countryNameEn}", {
   filter: (country) => country.currencyCode === "EUR",
 });
-```
+// { Europe: ['Andorra', 'Austria', 'Åland Islands', 'Belgium', ...], 'South/Latin America': [...], ... }
 
-This will return an object like this one — keyed by region, with an array of country names per group:
-
-```js
-{
-    'Europe': ['Andorra', 'Austria', 'Åland Islands', 'Belgium', ...],
-    'South/Latin America': ['Saint Barthélemy', 'French Guiana', 'Guadeloupe', ...],
-    'North America': ['Saint Pierre and Miquelon'],
-    'Asia & Pacific': ['Réunion', 'French Southern and Antarctic Lands'],
-    'Africa': ['Mayotte'],
-}
-```
-
-Keys that no country matched are simply absent, so the return type is `Partial<Record<string, string[]>>` — check before use:
-
-```js
-const byRegion = countryCodes.customGroupedList("region", "{countryCode}", {
+const onlyAR = countryCodes.customGroupedList("region", "{countryCode}", {
   filter: (country) => country.countryCode === "AR",
 });
-byRegion["Europe"]; // undefined — no European country passed the filter
-byRegion["Europe"]?.length ?? 0; // 0
+onlyAR["Europe"]; // undefined
+onlyAR["Europe"]?.length ?? 0; // 0
 ```
 
-### API Details – customArray Method
+### `customArray(fields?, options?)`
 
-Renders every country into an object shaped like the template you pass — one output key per placeholder string — and returns them as an array. Handy for `<select>` options.
+```ts
+customArray<F extends Record<string, string>>(
+  fields?: F,   // default { name: "{countryNameEn} ({countryCode})", value: "{countryCode}" }
+  options?: {
+    sortBy?: keyof F;                             // a key of YOUR template
+    sortDataBy?: CountryScalarProperty;           // a dataset property
+    filter?: (country: CountryData) => boolean;
+  }
+): Record<keyof F, string>[]
+```
+
+Returns one object per country, shaped like `fields`. Each value is a template with `{placeholder}` syntax.
+
+| Option | Applies to | Effect |
+| --- | --- | --- |
+| `filter` | dataset | Keeps only the countries that return `true`. Runs first. |
+| `sortDataBy` | dataset property (`"countryNameEn"`) | Sorts the countries before rendering. |
+| `sortBy` | key of your template (`"name"`) | Sorts the output after rendering. |
+
+Both sorts use `Intl.Collator` with accent sensitivity.
 
 ```js
-const countryCodes = require("country-codes-list");
-
 countryCodes.customArray(
-  { name: "{countryNameEn}", value: "{countryCode}" },
-  { sortBy: "name" }
+  { label: "{flag} {countryNameEn}", value: "{countryCode}" },
+  { filter: (c) => c.region === "North America", sortBy: "label" }
 );
-// => [{ name: 'Afghanistan', value: 'AF' }, { name: 'Åland Islands', value: 'AX' }, ...]
+// [
+//   { label: '🇧🇲 Bermuda', value: 'BM' },
+//   { label: '🇨🇦 Canada', value: 'CA' },
+//   { label: '🇵🇲 Saint Pierre and Miquelon', value: 'PM' },
+//   { label: '🇺🇸 United States of America', value: 'US' }
+// ]
 ```
 
-Without a template it uses `{ name: "{countryNameEn} ({countryCode})", value: "{countryCode}" }`. Options:
+### `utils.groupBy(array, key)`
 
-- `sortBy`: a key of **your template** (`"name"` above), sorting the rendered output with an accent-sensitive collator.
-- `sortDataBy`: a dataset property (`"countryNameEn"`, `"currencyCode"`, …), sorting the countries before rendering.
-- `filter`: `(country) => boolean`, applied before sorting.
+```ts
+utils.groupBy<T>(array: T[], key: keyof T): Record<string, T[]>
+```
 
-### API Details – utils.groupBy
-
-`utils.groupBy(array, key)` groups any array of objects by one of their keys; it is what `customGroupedList` is built on.
+Groups any array of objects by one key. `customGroupedList` uses it internally.
 
 ```js
-const countryCodes = require("country-codes-list");
-
-const byRegion = countryCodes.utils.groupBy(countryCodes.all(), "region");
-byRegion["Arab States"].length; // 22
+countryCodes.utils.groupBy(countryCodes.all(), "region")["Arab States"].length; // 22
 ```
 
 ### Types
 
-The package exports three types:
-
-- `CountryData`: the shape of one record.
-- `CountryProperty`: every key of `CountryData` (including the array fields `altCodes`, `areaCodes` and `nationalNumberLengths`, and the numeric `currencyDecimals`).
-- `CountryScalarProperty`: only the string-valued keys; this is what `filter`, `findOne`, `customList`, `customGroupedList` and `sortDataBy` accept.
-
 ```ts
-import type { CountryData, CountryScalarProperty } from "country-codes-list";
-
-const key: CountryScalarProperty = "currencyCode";
-const pick = (c: CountryData) => c[key];
+import type { CountryData, CountryProperty, CountryScalarProperty } from "country-codes-list";
 ```
 
-## Data exports (JSON / CSV / CDN)
+| Type | Meaning |
+| --- | --- |
+| `CountryData` | One record. See [Data fields](#data-fields). |
+| `CountryProperty` | Every key of `CountryData`, arrays and `currencyDecimals` included. |
+| `CountryScalarProperty` | Only the string-valued keys. `filter`, `findOne`, `customList`, `customGroupedList` and `sortDataBy` accept this type. |
 
-The package also ships the whole dataset as plain files, for anything that isn't JavaScript — spreadsheets, Python, a SQL loader, a `<script>`-free web page:
+```ts
+const key: CountryScalarProperty = "currencyCode";
+const pick = (country: CountryData) => country[key];
+```
 
-- `dist/countries.json` — the full array returned by `all()`, pretty-printed
-- `dist/countries.csv` — one row per country; the header lists every field, array fields (`altCodes`, `areaCodes`, `nationalNumberLengths`) are joined with `|`, `null` is an empty cell, cells are quoted per RFC 4180 and rows end with LF. It is UTF-8 without a BOM, and `countryCodeNumeric` / `currencyNumeric` keep their leading zeros — import as UTF-8 and read the numeric columns as text so spreadsheets don't turn `"004"` into `4`
+## Data exports
 
-Both are on jsDelivr, pinned to the major version:
+The package also ships the dataset as files, for spreadsheets, Python, SQL or a web page:
+
+| File | Content |
+| --- | --- |
+| `dist/countries.json` | The array that `all()` returns, pretty-printed. |
+| `dist/countries.csv` | One row per country. The header lists every field. |
+
+Both files are on jsDelivr, pinned to the major version:
 
 ```
 https://cdn.jsdelivr.net/npm/country-codes-list@3/dist/countries.json
@@ -418,4 +314,60 @@ const countries = await fetch(
 ).then((r) => r.json());
 ```
 
-Both files are written by `npm run build`, so they always match the compiled dataset. The generated fields themselves (`countryCodeNumeric`, `currencyNumeric`, `currencyDecimals`, `currencySymbol`, `nationalNumberLengths`) are produced by the scripts under `scripts/` — `npm run data:all` regenerates them from their sources.
+CSV format notes:
+
+- UTF-8 without a BOM. Import the file as UTF-8.
+- Rows end with LF. Cells are quoted per RFC 4180.
+- Array fields (`altCodes`, `areaCodes`, `nationalNumberLengths`) are joined with `|`. `null` is an empty cell.
+- `countryCodeNumeric` and `currencyNumeric` keep their leading zeros. Read these columns as text, or `"004"` becomes `4`.
+
+## Contributing
+
+Build and test:
+
+```bash
+npm ci
+npm run build   # tsc, then writes dist/countries.json and dist/countries.csv
+npm test        # jest, 8 suites
+```
+
+CI runs the same steps on Node 22 and 24. Write PR titles and bodies in English.
+
+### Generated fields
+
+Five fields are written by scripts, not by hand. Do not edit them manually. The currency and number-length scripts need network access. No script runs in CI.
+
+| Command | Fields | Source |
+| --- | --- | --- |
+| `npm run data:numeric` | `countryCodeNumeric` | ISO 3166-1 table embedded in the script. |
+| `npm run data:currencies` | `currencyNumeric`, `currencyDecimals`, `currencySymbol` | ISO 4217 List One XML (SIX Group) and Node's ICU. |
+| `npm run data:number-lengths` | `nationalNumberLengths` | libphonenumber `PhoneNumberMetadata.xml`, pinned to a tag. |
+| `npm run data:all` | All of the above | Runs the three scripts in order. |
+
+Each script replaces only its own field in `src/countriesData.ts`. A second run makes no change. Add `--check` for a dry run that exits with code 1 on drift.
+
+### Invariant tests and the known-gaps ledger
+
+`tests/dataset-invariants.test.ts` asserts rules for every record: unique codes, valid ISO 4217, valid ISO 639, E.164 limits, the six regions. Some rules have known exceptions. Each exception is listed in a `KNOWN_GAPS_*` constant with a reason.
+
+The test asserts that the ledger is exactly the set of violators. If you fix a data gap, remove its ledger entry in the same PR. If you do not, the test fails.
+
+## Migration
+
+### v2.x to v3.0
+
+| Change | Before (v2) | After (v3) |
+| --- | --- | --- |
+| `countryCallingCode` holds the E.164 code only. | `JM` was `'876'`. | `JM` is `'1'`, and `areaCodes` is `['876', '658']`. |
+| `areaCodes` is a required `string[]`. | Optional `any[]`. | Always present. Empty means "not recorded". |
+| Key parameters accept `CountryScalarProperty` only. | `customList("altCodes", ...)` compiled. | TypeScript error. Use `findOneByCode("UK")` for alternative codes. |
+
+To dial a full number, join the calling code and an area code: `` `+${cc}${areaCodes[0]}` ``.
+
+### v1.x to v2.0
+
+| Change | Before (v1) | After (v2) |
+| --- | --- | --- |
+| `CountryProperty` is a type, not an enum. | `CountryProperty.countryCode` | `"countryCode"`, with `import type`. |
+| Named CommonJS exports. | `require("country-codes-list")` | Same, or `import * as countryCodes` through interop. |
+| Property keys are type-checked. | `filter("invalidKey", "x")` compiled. | TypeScript error. |
