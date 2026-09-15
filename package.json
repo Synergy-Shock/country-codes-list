@@ -8,7 +8,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node scripts/export-data.mjs",
     "test": "jest",
     "data:numeric": "node scripts/generate-numeric-codes.mjs",
     "data:currencies": "node scripts/generate-currencies.mjs",
