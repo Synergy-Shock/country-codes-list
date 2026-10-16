@@ -42,4 +42,18 @@ describe("data exports", () => {
     // Andorra's language name has a comma, so it must be quoted.
     expect(csv).toContain('"Catalan, Valencian"');
   });
+
+  test("metadata.json has the package version, record count and upstream sources", () => {
+    const meta = JSON.parse(readFileSync(join(dist, "metadata.json"), "utf8"));
+    const { version } = JSON.parse(readFileSync(join(__dirname, "..", "package.json"), "utf8"));
+    expect(meta).toEqual({
+      version,
+      recordCount: all.length,
+      sources: {
+        iso4217ListOne: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+        cldr: expect.stringMatching(/^\d+(\.\d+)*$/),
+        libphonenumber: expect.stringMatching(/^v\d+\.\d+\.\d+$/),
+      },
+    });
+  });
 });

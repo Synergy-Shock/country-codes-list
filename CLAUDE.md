@@ -136,7 +136,7 @@ The npm tarball contains only `dist/` (`files: ["dist"]`). This file is not publ
 
 ```bash
 npm ci
-npm run build   # tsc, then scripts/export-data.mjs writes dist/countries.json and dist/countries.csv
+npm run build   # tsc, then scripts/export-data.mjs writes dist/countries.json, dist/countries.csv and dist/metadata.json
 npm test        # jest; tests/exports.test.ts needs a build first
 ```
 
@@ -160,10 +160,11 @@ Generated fields sit at the end of each record, after `flag`, in a fixed order (
 
 Rules for the generators:
 
-- The currency and number-length generators need network access. No generator runs in CI.
+- The currency and number-length generators need network access. Generators never WRITE in CI. `.github/workflows/data-drift.yml` runs monthly and only runs `--check` (currencies, and number lengths against the latest libphonenumber release); on drift it opens or updates one GitHub issue.
 - Each one rewrites only its own field lines in `src/countriesData.ts`. A second run produces no diff.
 - `--check` is a dry run that exits with code 1 on drift. Use `npm run data:check` for all three; `npm run data:all -- --check` is NOT a dry run (the flag reaches only the last script). Use `npm run data:check` for all three; `npm run data:all -- --check` is NOT a dry run (the flag reaches only the last script).
 - If you change `currencyCode` by hand, run `npm run data:currencies` afterwards so the derived fields follow.
+- Each generator also records its upstream version in `src/dataSources.json` (ISO 4217 List One `Pblshd` date, CLDR version, libphonenumber tag); `npm run build` copies it into `dist/metadata.json` with the package version and record count. Never edit it by hand.
 - When you regenerate, record the source version (List One `Pblshd` date, CLDR version, libphonenumber tag) in the commit message. The scripts print these values.
 
 ### Invariant tests and the known-gaps ledger

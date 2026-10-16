@@ -67,7 +67,8 @@ if (!response.ok) {
   process.exit(1);
 }
 const xml = await response.text();
-console.log(`ISO 4217 List One published ${xml.match(/Pblshd="([^"]*)"/)?.[1] ?? "?"}; symbols from CLDR ${process.versions.cldr} (Node ${process.versions.node})`);
+const listOnePublished = xml.match(/Pblshd="([^"]*)"/)?.[1] ?? "?";
+console.log(`ISO 4217 List One published ${listOnePublished}; symbols from CLDR ${process.versions.cldr} (Node ${process.versions.node})`);
 const iso4217 = parseListOne(xml);
 
 const currencyOf = (record) => {
@@ -82,4 +83,4 @@ applyGenerated([
   ["currencyNumeric", (record) => JSON.stringify(currencyOf(record).numeric)],
   ["currencyDecimals", (record) => JSON.stringify(currencyOf(record).decimals)],
   ["currencySymbol", (record) => JSON.stringify(currencyOf(record).symbol)],
-]);
+], { sources: { iso4217ListOne: listOnePublished, cldr: process.versions.cldr } });
