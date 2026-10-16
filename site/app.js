@@ -148,11 +148,13 @@ function checkPhone() {
     el("p", { className: ok ? "good" : "bad" },
       ok ? `✓ ${digits.length} digits is a possible length for ${c.countryNameEn}.` : `✗ ${digits.length} digits. ${c.countryNameEn} numbers have ${list} digits.`),
   );
-  // Trunk prefix: national formats often start with 0, which is not part of the national number.
+  // Hints only when the count fails. A length check cannot tell a prefix from a real digit
+  // (Italy keeps its leading 0, some national numbers start with the calling code digits).
+  if (ok) return;
   if (digits.startsWith("0") && lengths.includes(digits.length - 1)) {
-    out.append(el("p", { className: "warn", textContent: `It starts with 0. That is usually a trunk prefix for local dialing. Without it the number has ${digits.length - 1} digits, which is valid. Strip the trunk prefix, keep the area code.` }));
+    out.append(el("p", { className: "warn", textContent: `If the leading 0 is a trunk prefix (a digit for local dialing only), the number without it has ${digits.length - 1} digits, which is a possible length. Strip the trunk prefix, keep the area code. Some countries, such as Italy, keep the 0.` }));
   } else if (digits.startsWith(c.countryCallingCode) && lengths.includes(digits.length - c.countryCallingCode.length)) {
-    out.append(el("p", { className: "warn", textContent: `It looks like it includes the calling code ${c.countryCallingCode}. Remove it and count only the national number.` }));
+    out.append(el("p", { className: "warn", textContent: `If it starts with the calling code ${c.countryCallingCode}, remove it: count only the national number.` }));
   }
 }
 sel.addEventListener("change", checkPhone);
@@ -250,10 +252,11 @@ function renderTable() {
     th.setAttribute("aria-sort", th.dataset.key === sortKey ? (sortDir === 1 ? "ascending" : "descending") : "none");
   }
   $("#table-count").textContent = `${rows.length} of ${all.length} countries`;
-  showSnippet(`${base}\n  ${steps.join("\n  ")};`, `${rows.length} countries`);
+  showSnippet(`${base}\n  ${steps.join("\n  ")};`, `${rows.length} ${rows.length === 1 ? "country" : "countries"}`);
 }
 $("#table-filters").addEventListener("input", renderTable);
-$("#table-filters").addEventListener("change", renderTable); // some tools only fire change on <select>
+// Selects only: a change listener on the search box would re-render on blur and swallow row clicks.
+for (const id of ["#f-region", "#f-currency"]) $(id).addEventListener("change", renderTable);
 $("#table-filters").addEventListener("submit", (e) => e.preventDefault());
 
 renderTable();
