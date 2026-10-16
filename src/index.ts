@@ -124,7 +124,8 @@ export function findOneByCode(code: string): CountryData | undefined {
  * so `"+1 876 555 0100"`, `"001876..."` and `"1 (876) 555"` are all read as
  * `1876...`. Other exit codes (`011`) and national formats (`0...`) do not
  * match. The digits must start with the E.164 country calling code; calling
- * codes never prefix each other, so at most one matches.
+ * codes never prefix each other, so at most one matches. Pass international
+ * numbers only: a domestic "2125550100" is read as +212 (EH, MA).
  *
  * Countries sharing the calling code are then narrowed by `areaCodes`:
  * - The longest recorded area code that the next digits start with wins:

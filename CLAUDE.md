@@ -62,7 +62,7 @@ Templates use `{placeholder}` syntax with any string or number field. Array fiel
 - Use `findOneByCode` for codes from outside your code (locales, VAT numbers, APIs). It accepts alpha-2, alpha-3, `altCodes` and 3-digit numeric codes, case-insensitive.
 - Use `findOne("countryCode", x)` only for exact, uppercase ISO codes. `findOne("countryCode", "UK")` is `undefined`.
 - Reject empty input before `findOne` or `filter`. An empty string matches "not recorded" fields: `findOne("currencyCode", "")` returns `AQ`.
-- Use `findByPhonePrefix` to guess a country from a dialled number. It returns an array: several countries share most calling codes (`+44` is 4 countries, `+1 212` is `US` and `UM`). Only `+` and `00` prefixes are read. A national number (`0...`) returns `[]`.
+- Use `findByPhonePrefix` to guess a country from a dialled number. It returns an array: some calling codes are shared (`+44` is 4 countries, `+1 212` is `US` and `UM`). Pass international numbers only: the digits (after an optional `+` or `00`) must start with the calling code. A domestic number is misread (`"2125550100"` is read as `+212`, `[EH, MA]`).
 - Use `includes`, never min/max, on `nationalNumberLengths`. NL is `[9, 11]`, so 10 digits is invalid.
 - Strip the trunk prefix (the leading `0` in GB, DE, FR and most others) before you compare a length. Keep the area code. In `IT`, `SM` and `VA` the leading `0` is part of the number: keep it (`"0612345678"` counts 10 digits for IT).
 - Treat an empty `areaCodes` or `nationalNumberLengths` as "not recorded", never as "none".

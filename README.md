@@ -207,13 +207,13 @@ countryCodes.findOneByCode("ZZ"); // undefined
 findByPhonePrefix(input: string): CountryData[]
 ```
 
-Returns the countries a dialled number can belong to, from its leading digits. Non-digits are ignored and a leading `00` is dropped, so `+1 876 ...`, `001876...` and `1 (876) ...` read the same. The digits must start with the calling code. National formats (`0...`) and other exit codes (`011`) return `[]`.
+Returns the countries a dialled number can belong to, from its leading digits. Non-digits are ignored and a leading `00` is dropped, so `+1 876 ...`, `001876...` and `1 (876) ...` read the same. The digits must start with the calling code, so pass international numbers only. A domestic number is read as if it began with a calling code (`2125550100` is read as `+212` and returns EH and MA). Numbers that start with `0` (national trunk prefix, or the `011` exit code) return `[]`.
 
 Countries that share the calling code are narrowed by `areaCodes`:
 
 - A recorded area code that matches the next digits wins (`+1 876` is Jamaica).
 - If the next digits can still become a recorded area code (`+1`, `+1 8`), the result is every country with that calling code.
-- Otherwise the result is the countries with no recorded area codes (`+1 212` is US and UM).
+- Otherwise the result is the countries with no recorded area codes (`+1 212` is US and UM). If every country in the group records area codes, the result is the whole group (`+599 5` is BQ and CW).
 
 Groups with no area codes are not narrowed: `+44` returns all four. `CX` and `CC` record area code `8`, which Western Australia also uses, so `+61 8` returns `CX` and `CC`. The function checks prefixes only. It does not validate the number. Results keep dataset order.
 
