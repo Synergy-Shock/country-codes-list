@@ -300,6 +300,7 @@ The package also ships the dataset as files, for spreadsheets, Python, SQL or a 
 | --- | --- |
 | `dist/countries.json` | The array that `all()` returns, pretty-printed. |
 | `dist/countries.csv` | One row per country. The header lists every field. |
+| `dist/metadata.json` | `{ version, recordCount, sources }`: package version, record count and the upstream versions behind the generated fields (ISO 4217 List One date, CLDR, libphonenumber tag). |
 
 Both files are on jsDelivr, pinned to the major version:
 

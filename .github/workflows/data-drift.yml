@@ -1,0 +1,61 @@
+name: Data drift
+
+# Dry-run check that the generated fields still match upstream (ISO 4217 List One,
+# CLDR symbols, latest libphonenumber release). Nothing is ever written: on drift
+# it opens or updates one GitHub issue.
+on:
+  schedule:
+    - cron: "0 6 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Check generated fields against upstream
+        id: check
+        run: |
+          LP_TAG="$(gh api repos/google/libphonenumber/releases/latest --jq .tag_name)"
+          echo "libphonenumber latest release: $LP_TAG"
+          STATUS=0
+          {
+            echo "### Currencies (ISO 4217 List One + CLDR)"
+            node scripts/generate-currencies.mjs --check || STATUS=1
+            echo
+            echo "### Number lengths (libphonenumber $LP_TAG)"
+            node scripts/generate-national-number-lengths.mjs --check "--ref=$LP_TAG" || STATUS=1
+          } 2>&1 | tee drift.txt
+          echo "drift=$STATUS" >> "$GITHUB_OUTPUT"
+      - name: Open or update the drift issue
+        if: steps.check.outputs.drift == '1'
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          TITLE="Data drift: generated fields differ from upstream"
+          {
+            echo "Monthly drift check found differences. Re-run the generators locally (see CLAUDE.md; pass --ref=<tag> to the number-lengths generator to bump libphonenumber), review and open a PR."
+            echo
+            echo "Run: $RUN_URL"
+            echo
+            echo '```'
+            cat drift.txt
+            echo '```'
+          } > body.md
+          NUMBER="$(gh issue list --state open --search "\"$TITLE\" in:title" --json number,title --jq "map(select(.title == \"$TITLE\"))[0].number // empty")"
+          if [ -n "$NUMBER" ]; then
+            gh issue edit "$NUMBER" --body-file body.md
+          else
+            gh issue create --title "$TITLE" --body-file body.md
+          fi
