@@ -38,7 +38,7 @@ Each of the 250 records has these fields. See [Data fields](#data-fields) for ty
 | Names | `countryNameEn`, `countryNameLocal` |
 | Currency | `currencyCode`, `currencyNameEn`, `currencyNumeric`, `currencyDecimals`, `currencySymbol` |
 | Phone | `countryCallingCode`, `areaCodes`, `nationalNumberLengths` |
-| Tax | `tinType`, `tinName` (64 countries) |
+| Tax | `tinType`, `tinName` (65 countries) |
 | Language | `officialLanguageCode`, `officialLanguageNameEn`, `officialLanguageNameLocal` (first official language) |
 | Other | `region` (6 ITU-based values), `flag` (emoji) |
 
@@ -55,7 +55,7 @@ Checked on 2026-10-16 against the latest npm versions. Size is the browser entry
 | Currency | code, name, numeric, decimals, symbol | codes; details through an opt-in import | no | code, name, symbol | no |
 | Calling code | yes | yes | no | yes | yes |
 | Phone number check | digit counts only | no | no | no | full parse, validation, formatting |
-| Tax ID name (VAT, EIN, CUIT) | 64 countries | no | no | no | no |
+| Tax ID name (VAT, EIN, CUIT) | 65 countries | no | no | no | no |
 | Languages | first official language | several per country, ISO 639-1 | no | several per country, with names | no |
 | Capital, borders, TLD, coordinates | no | capital only | no | yes | no |
 | Flag emoji | field | `getEmojiFlag()` | no | field | no |
