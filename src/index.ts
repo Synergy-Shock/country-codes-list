@@ -117,6 +117,64 @@ export function findOneByCode(code: string): CountryData | undefined {
  * (`"countryNameEn"`, …) before rendering. Both use a locale-aware,
  * accent-sensitive collator.
  */
+/**
+ * Countries a dialled number can belong to, from its leading digits.
+ *
+ * Non-digits are ignored and a leading `00` international prefix is dropped,
+ * so `"+1 876 555 0100"`, `"001876..."` and `"1 (876) 555"` are all read as
+ * `1876...`. Other exit codes (`011`) and national formats (`0...`) do not
+ * match. The digits must start with the E.164 country calling code; calling
+ * codes never prefix each other, so at most one matches. Pass international
+ * numbers only: a domestic "2125550100" is read as +212 (EH, MA).
+ *
+ * Countries sharing the calling code are then narrowed by `areaCodes`:
+ * - The longest recorded area code that the next digits start with wins:
+ *   `+1 876` is `[JM]`, `+599 9` is `[CW]`.
+ * - If the next digits could still become a recorded area code (`+1`, `+1 8`),
+ *   it is too early to narrow: every country with that calling code.
+ * - Otherwise the countries with no recorded `areaCodes`: `+1 212` is
+ *   `[US, UM]`, `+61 2` is `[AU]`. If every country records area codes, all
+ *   of them.
+ *
+ * Groups without area codes are never narrowed: `+44` is `[GG, IM, JE, GB]`,
+ * `+7` is `[KZ, RU]`. Area codes are as recorded: `CX` and `CC` record `8`,
+ * which Western Australia also uses, so `+61 8` returns `[CX, CC]`.
+ *
+ * Returns `[]` when nothing matches. This checks prefixes only, not whether
+ * the number is valid. Results are in dataset order, in a fresh array; the
+ * country objects are live references into the shared dataset, as with
+ * {@link filter} — treat them as read-only.
+ */
+export function findByPhonePrefix(input: string): CountryData[] {
+  if (typeof input !== "string") return [];
+  let digits = input.replace(/\D/g, "");
+  // No calling code starts with 0, so dropping "00" never hides a real code.
+  if (digits.startsWith("00")) digits = digits.slice(2);
+  if (!digits) return [];
+
+  for (let length = 3; length >= 1; length--) {
+    const group = countriesData.filter(
+      (c) => c.countryCallingCode === digits.slice(0, length)
+    );
+    if (group.length === 0) continue;
+
+    const rest = digits.slice(length);
+    let areaCode = "";
+    group.forEach((c) =>
+      c.areaCodes.forEach((a) => {
+        if (rest.startsWith(a) && a.length > areaCode.length) areaCode = a;
+      })
+    );
+    if (areaCode) return group.filter((c) => c.areaCodes.includes(areaCode));
+    if (group.some((c) => c.areaCodes.some((a) => a.startsWith(rest)))) {
+      return group;
+    }
+    const unlisted = group.filter((c) => c.areaCodes.length === 0);
+    return unlisted.length > 0 ? unlisted : group;
+  }
+  return [];
+}
+
 type CustomArrayOptions<F> = {
   sortBy?: keyof F;
   sortDataBy?: CountryScalarProperty;
