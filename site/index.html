@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>country-codes-list playground</title>
+  <meta name="description" content="Try country-codes-list in your browser: look up any ISO country code, check phone number lengths, and browse 250 country records.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌐</text></svg>">
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="top">
+    <a class="brand" href="./">country-codes-list</a>
+    <nav aria-label="Project links">
+      <a href="https://github.com/Synergy-Shock/country-codes-list">★ Star on GitHub</a>
+      <a href="https://www.npmjs.com/package/country-codes-list">npm</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero" aria-labelledby="hero-title">
+      <h1 id="hero-title">One record per country. <span>250 of them.</span></h1>
+      <p class="lede">ISO codes, currency, language, calling code, phone number lengths and tax ID names, with TypeScript types and zero dependencies. Everything on this page runs the real package from jsDelivr.</p>
+      <div class="install">
+        <code id="install-cmd">npm install country-codes-list</code>
+        <button type="button" class="copy" data-copy="#install-cmd">Copy</button>
+      </div>
+    </section>
+
+    <p id="status" class="status" role="status">Loading the package…</p>
+
+    <div class="layout">
+      <div class="tools">
+        <section class="card" aria-labelledby="lookup-title">
+          <h2 id="lookup-title">Look up any code</h2>
+          <p class="hint">Alpha-2, alpha-3, numeric or alternative codes, any case.</p>
+          <form id="lookup-form" class="row" autocomplete="off">
+            <label for="lookup-input" class="sr-only">Country code</label>
+            <input id="lookup-input" class="code-input" maxlength="3" spellcheck="false" value="UK" disabled>
+          </form>
+          <div class="chips" role="group" aria-label="Examples">
+            <button type="button" data-try="UK">UK</button>
+            <button type="button" data-try="EL">EL</button>
+            <button type="button" data-try="840">840</button>
+            <button type="button" data-try="arg">arg</button>
+            <button type="button" data-try="XK">XK</button>
+          </div>
+          <div id="lookup-result" class="result" aria-live="polite"></div>
+        </section>
+
+        <section class="card" aria-labelledby="phone-title">
+          <h2 id="phone-title">Check a phone number length</h2>
+          <p class="hint">Digit count only, against <code>nationalNumberLengths</code>. For full validation use libphonenumber-js.</p>
+          <form id="phone-form" class="phone" autocomplete="off">
+            <div class="field">
+              <label for="phone-country">Country</label>
+              <select id="phone-country" disabled></select>
+            </div>
+            <div class="field">
+              <label for="phone-number">National number</label>
+              <input id="phone-number" inputmode="tel" value="020 7946 0958" disabled>
+            </div>
+          </form>
+          <div id="phone-result" class="result" aria-live="polite"></div>
+        </section>
+      </div>
+
+      <aside class="snippet" aria-labelledby="snippet-title">
+        <div class="snippet-head">
+          <h2 id="snippet-title">Your code</h2>
+          <button type="button" class="copy" data-copy="#snippet-code">Copy</button>
+        </div>
+        <pre><code id="snippet-code">const countryCodes = require("country-codes-list");</code></pre>
+        <p id="snippet-out" class="snippet-out"></p>
+      </aside>
+    </div>
+
+    <section class="browse" aria-labelledby="browse-title">
+      <h2 id="browse-title">Browse every record</h2>
+      <form id="table-filters" class="filters" autocomplete="off">
+        <div class="field">
+          <label for="f-search">Search</label>
+          <input id="f-search" type="search" placeholder="Name or code">
+        </div>
+        <div class="field">
+          <label for="f-region">Region</label>
+          <select id="f-region"><option value="">All regions</option></select>
+        </div>
+        <div class="field">
+          <label for="f-currency">Currency</label>
+          <select id="f-currency"><option value="">All currencies</option></select>
+        </div>
+      </form>
+      <p id="table-count" class="hint" aria-live="polite"></p>
+      <div class="table-wrap" tabindex="0" role="region" aria-labelledby="browse-title">
+        <table>
+          <thead>
+            <tr id="table-head"></tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p>MIT licensed. Data sources: ISO 3166-1, ISO 4217, ISO 639, ITU-T E.164, libphonenumber. <a href="https://github.com/Synergy-Shock/country-codes-list">Source on GitHub</a>.</p>
+  </footer>
+
+  <dialog id="record" aria-labelledby="record-title">
+    <div class="dialog-head">
+      <h2 id="record-title"></h2>
+      <button type="button" class="copy" data-copy="#record-json">Copy JSON</button>
+      <button type="button" id="record-close" aria-label="Close">✕</button>
+    </div>
+    <pre><code id="record-json"></code></pre>
+  </dialog>
+</body>
+</html>
