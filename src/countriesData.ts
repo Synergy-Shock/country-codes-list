@@ -1398,7 +1398,7 @@ const countriesData: CountryData[] = [
   },
   {
     countryNameEn: "Western Sahara",
-    countryNameLocal: "Sahara Occidental",
+    countryNameLocal: "الصحراء الغربية, Sahara Occidental",
     countryCode: "EH",
     countryCodeAlpha3: "ESH",
     currencyCode: "MAD",
@@ -3382,7 +3382,7 @@ const countriesData: CountryData[] = [
   },
   {
     countryNameEn: "New Zealand",
-    countryNameLocal: "New Zealand",
+    countryNameLocal: "Aotearoa, New Zealand",
     countryCode: "NZ",
     countryCodeAlpha3: "NZL",
     currencyCode: "NZD",
@@ -5253,7 +5253,7 @@ const countriesData: CountryData[] = [
   },
   {
     countryNameEn: "Niger",
-    countryNameLocal: "Niger",
+    countryNameLocal: "Nijar",
     countryCode: "NE",
     countryCodeAlpha3: "NER",
     currencyCode: "XOF",
@@ -5473,7 +5473,7 @@ const countriesData: CountryData[] = [
   },
   {
     countryNameEn: "Comoros",
-    countryNameLocal: "Umoja wa Komori",
+    countryNameLocal: "Union des Comores, Udzima wa Komori",
     countryCode: "KM",
     countryCodeAlpha3: "COM",
     currencyCode: "KMF",
