@@ -201,6 +201,30 @@ countryCodes.findOneByCode("4"); // undefined, numeric codes need three digits
 countryCodes.findOneByCode("ZZ"); // undefined
 ```
 
+### `findByPhonePrefix(input)`
+
+```ts
+findByPhonePrefix(input: string): CountryData[]
+```
+
+Returns the countries a dialled number can belong to, from its leading digits. Non-digits are ignored and a leading `00` is dropped, so `+1 876 ...`, `001876...` and `1 (876) ...` read the same. The digits must start with the calling code. National formats (`0...`) and other exit codes (`011`) return `[]`.
+
+Countries that share the calling code are narrowed by `areaCodes`:
+
+- A recorded area code that matches the next digits wins (`+1 876` is Jamaica).
+- If the next digits can still become a recorded area code (`+1`, `+1 8`), the result is every country with that calling code.
+- Otherwise the result is the countries with no recorded area codes (`+1 212` is US and UM).
+
+Groups with no area codes are not narrowed: `+44` returns all four. `CX` and `CC` record area code `8`, which Western Australia also uses, so `+61 8` returns `CX` and `CC`. The function checks prefixes only. It does not validate the number. Results keep dataset order.
+
+```js
+countryCodes.findByPhonePrefix("+1 876 555 0100").map((c) => c.countryCode); // ['JM']
+countryCodes.findByPhonePrefix("+1 (212) 555-0100").map((c) => c.countryCode); // ['US', 'UM']
+countryCodes.findByPhonePrefix("+44 20 7946 0958").map((c) => c.countryCode); // ['GG', 'IM', 'JE', 'GB']
+countryCodes.findByPhonePrefix("0059 99 123").map((c) => c.countryCode); // ['CW']
+countryCodes.findByPhonePrefix("not a number"); // []
+```
+
 ### `customList(key?, label?, options?)`
 
 ```ts
@@ -350,7 +374,7 @@ Build and test:
 ```bash
 npm ci
 npm run build   # tsc, then writes dist/countries.json and dist/countries.csv
-npm test        # jest, 8 suites
+npm test        # jest, 10 suites
 ```
 
 CI runs the same steps on Node 22 and 24. Write PR titles and bodies in English.
