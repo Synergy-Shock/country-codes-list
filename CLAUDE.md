@@ -61,7 +61,7 @@ Templates use `{placeholder}` syntax with any string or number field. Array fiel
 - Use `findOneByCode` for codes from outside your code (locales, VAT numbers, APIs). It accepts alpha-2, alpha-3, `altCodes` and 3-digit numeric codes, case-insensitive.
 - Use `findOne("countryCode", x)` only for exact, uppercase ISO codes. `findOne("countryCode", "UK")` is `undefined`.
 - Use `includes`, never min/max, on `nationalNumberLengths`. NL is `[9, 11]`, so 10 digits is invalid.
-- Strip the trunk prefix (the leading `0`) before you compare a length. Keep the area code.
+- Strip the trunk prefix (the leading `0` in GB, DE, FR and most others) before you compare a length. Keep the area code. In `IT`, `SM` and `VA` the leading `0` is part of the number: keep it (`"0612345678"` counts 10 digits for IT).
 - Treat an empty `areaCodes` or `nationalNumberLengths` as "not recorded", never as "none".
 - Never use `currencySymbol` as a key or for lookup. Use `currencyCode`.
 - Use `customList` only with a unique key (`countryCode`, `countryCodeAlpha3`). Use `customGroupedList` for shared keys (`countryCallingCode`, `currencyCode`, `region`, `officialLanguageCode`).
@@ -69,7 +69,8 @@ Templates use `{placeholder}` syntax with any string or number field. Array fiel
 - Do not rely on `all() === all()`. Each call returns a new array. Do not mutate the country objects inside it.
 - Do not rely on dataset order. It is not alphabetical (33 records are appended at the end). Sort the result if order matters.
 - Zero-pad numeric codes: `findOneByCode("004")` resolves, `findOneByCode("4")` does not.
-- In `customArray`, `sortBy` names a key of YOUR template (`"name"`). `sortDataBy` names a dataset field (`"countryNameEn"`).
+- In `customArray`, `sortBy` names a key of YOUR template (`"name"`). `sortDataBy` names a dataset field (`"countryNameEn"`). `sortBy` compares the rendered string, so a leading `{flag}` sorts by alpha-2 code.
+- `customList` and `customGroupedList` return plain objects. Key order follows JS rules: integer-like keys (calling codes such as `"1"`, `"7"`, `"20"`) come first in ascending order, then other keys in insertion order.
 - Read the CSV numeric columns (`countryCodeNumeric`, `currencyNumeric`) as text to keep leading zeros.
 
 ## Recipes
@@ -101,11 +102,25 @@ const jm = countryCodes.findOneByCode("JM");
 // Every country that uses the euro
 countryCodes.customGroupedList("currencyCode", "{countryCode}")["EUR"].length; // 37
 
-// <select> options with flags, sorted by label
+// <select> options with flags, sorted by English name.
+// Use sortDataBy, not sortBy: sortBy compares the rendered label, and the flag emoji sorts by alpha-2 code.
 countryCodes.customArray(
   { label: "{flag} {countryNameEn}", value: "{countryCode}" },
-  { sortBy: "label" }
-);
+  { sortDataBy: "countryNameEn" }
+).slice(0, 3);
+// [{ label: '🇦🇫 Afghanistan', value: 'AF' }, { label: '🇦🇽 Åland Islands', value: 'AX' }, { label: '🇦🇱 Albania', value: 'AL' }]
+
+// Translated country names with no extra data: Intl.DisplayNames and Intl.Collator
+const names = new Intl.DisplayNames(["es"], { type: "region" });
+const collator = new Intl.Collator("es");
+countryCodes.all()
+  .map((c) => ({ label: names.of(c.countryCode), value: c.countryCode }))
+  .sort((a, b) => collator.compare(a.label, b.label))
+  .slice(0, 3);
+// [{ label: 'Afganistán', value: 'AF' }, { label: 'Albania', value: 'AL' }, { label: 'Alemania', value: 'DE' }]
+// Names come from the runtime's CLDR data. Node 24 (CLDR 48) names all 250 codes, XK ('Kosovo') included,
+// in es, de, ja, ar and pt-BR. A locale with thin CLDR data (haw) returns the code for most countries.
+// An unsupported locale falls back to the default locale. Pass { fallback: "none" } to get undefined instead of the code.
 ```
 
 ## Pair with

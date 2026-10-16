@@ -98,15 +98,18 @@ nl.includes(10); // false, correct
 10 >= Math.min(...nl) && 10 <= Math.max(...nl); // true, wrong
 ```
 
-**The area code is counted, the trunk prefix is not.** The British number `020 7946 0958` has a national number of `2079460958`. That is 10 digits, area code included. Remove the leading `0` before you compare.
+**The area code is counted, the trunk prefix is not.** The British number `020 7946 0958` has a national number of `2079460958`. That is 10 digits, area code included. Remove the leading `0` before you compare. Exception: in Italy (`IT`), San Marino (`SM`) and Vatican City (`VA`) the leading `0` of a fixed-line number is part of the national number. Keep it there.
 
 ```js
 countryCodes.findOneByCode("GB").nationalNumberLengths.includes("2079460958".length); // true
+countryCodes.findOneByCode("IT").nationalNumberLengths.includes("0612345678".length); // true, the 0 counts
 ```
 
 **`currencySymbol` is not unique.** 29 currencies show `"$"` (USD, CAD, AUD, MXN and more). `"£"`, `"kr"`, `"¥"` and `"₩"` are also shared. Do not use the symbol as a key.
 
 **`customList` keys must be unique.** `countryCode` and `countryCodeAlpha3` are unique. `countryCallingCode`, `currencyCode`, `region` and `officialLanguageCode` are not. With a shared key, only the last country survives. Use `customGroupedList` for shared keys.
+
+**Object key order follows JavaScript rules.** `customList` and `customGroupedList` return plain objects. Integer-like keys, such as calling codes, come first in ascending numeric order (`"1"`, `"7"`, `"20"`, ...). Other keys keep insertion order. Sort `Object.keys()` yourself if you need another order.
 
 **Array fields are not keys or placeholders.** `altCodes`, `areaCodes` and `nationalNumberLengths` are arrays. `filter`, `findOne`, `customList`, `customGroupedList` and `sortDataBy` reject them (a TypeScript error). A placeholder such as `{areaCodes}` stays in the output as written.
 
@@ -119,6 +122,24 @@ countryCodes.findOneByCode("GB").nationalNumberLengths.includes("2079460958".len
 **`UK` and `EL` are not ISO codes.** `findOneByCode("UK")` returns the United Kingdom, but `countryCode` stays `"GB"`. `findOne("countryCode", "UK")` returns `undefined`.
 
 **`region` has six values.** `Africa`, `Arab States`, `Asia & Pacific`, `Europe`, `North America` and `South/Latin America`. They follow the ITU classification, with two changes: ITU's "The Americas" is split in two, and ITU's "CIS" countries are placed in `Europe` or `Asia & Pacific`.
+
+## Translated country names
+
+The dataset has an English name and one local name. For other languages, use the `Intl` API that is built into Node and browsers. It needs no extra data.
+
+```js
+const names = new Intl.DisplayNames(["es"], { type: "region" });
+const collator = new Intl.Collator("es");
+
+countryCodes
+  .all()
+  .map((c) => ({ label: names.of(c.countryCode), value: c.countryCode }))
+  .sort((a, b) => collator.compare(a.label, b.label))
+  .slice(0, 3);
+// [{ label: 'Afganistán', value: 'AF' }, { label: 'Albania', value: 'AL' }, { label: 'Alemania', value: 'DE' }]
+```
+
+The names come from the CLDR data of the runtime, so they can differ between Node versions and browsers. In Node 24 (CLDR 48), all 250 codes have a name in `es`, `de`, `ja`, `ar` and `pt-BR`, `XK` (`'Kosovo'`) included. A locale with little CLDR data, such as `haw`, returns the code itself for most countries. An unsupported locale falls back to the default locale. Pass `{ type: "region", fallback: "none" }` to get `undefined` instead of the code.
 
 ## API reference
 
@@ -248,12 +269,12 @@ Returns one object per country, shaped like `fields`. Each value is a template w
 | `sortDataBy` | dataset property (`"countryNameEn"`) | Sorts the countries before rendering. |
 | `sortBy` | key of your template (`"name"`) | Sorts the output after rendering. |
 
-Both sorts use `Intl.Collator` with accent sensitivity.
+Both sorts use `Intl.Collator` with accent sensitivity. `sortBy` compares the rendered string. A label that starts with `{flag}` therefore sorts by alpha-2 code, not by name (`🇦🇱 Albania` comes after `🇦🇩 Andorra`). To sort flag labels by name, use `sortDataBy: "countryNameEn"`.
 
 ```js
 countryCodes.customArray(
   { label: "{flag} {countryNameEn}", value: "{countryCode}" },
-  { filter: (c) => c.region === "North America", sortBy: "label" }
+  { filter: (c) => c.region === "North America", sortDataBy: "countryNameEn" }
 );
 // [
 //   { label: '🇧🇲 Bermuda', value: 'BM' },
