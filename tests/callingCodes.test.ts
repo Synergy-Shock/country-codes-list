@@ -71,10 +71,9 @@ describe("areaCodes", () => {
   });
 
   test("never repeats a callingCode+areaCode pair across countries", () => {
-    // CC (+61 8 9162) and CX (+61 8 9164) both sit inside Western Australia's
-    // area code 8 and are only told apart at the exchange level, so the pair
-    // is genuinely shared. Any other collision is a data error.
-    const SHARED_PAIRS = new Set(["61-8"]);
+    // Any collision is a data error. CC and CX used to share "61-8" with
+    // Western Australia; they now record their exchange prefixes instead.
+    const SHARED_PAIRS = new Set<string>();
     const owner = new Map<string, string>();
     const collisions: string[] = [];
     all.forEach((c) =>
@@ -123,9 +122,11 @@ describe("NANP members (issue #52)", () => {
 describe("non-NANP countries that embedded an area code", () => {
   test("Cocos (Keeling) Islands dial +61 (Australia)", () => {
     expect(byCode("CC").countryCallingCode).toBe("61");
-    // Australia's area codes are single-digit; Cocos sits in 08. The trailing
-    // digits of the old "61 891" value were subscriber prefix, not area code.
-    expect(byCode("CC").areaCodes).toEqual(["8"]);
+    // Cocos and Christmas Island sit inside Western Australia's area code 08,
+    // so "8" alone cannot tell them apart from Perth. Their numbers start
+    // 8 9162 (CC) and 8 9164 (CX) per libphonenumber's fixedLine patterns.
+    expect(byCode("CC").areaCodes).toEqual(["89162"]);
+    expect(byCode("CX").areaCodes).toEqual(["89164"]);
   });
 
   test("Svalbard and Jan Mayen dial +47 (Norway)", () => {

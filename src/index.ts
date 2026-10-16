@@ -137,8 +137,7 @@ export function findOneByCode(code: string): CountryData | undefined {
  *   of them.
  *
  * Groups without area codes are never narrowed: `+44` is `[GG, IM, JE, GB]`,
- * `+7` is `[KZ, RU]`. Area codes are as recorded: `CX` and `CC` record `8`,
- * which Western Australia also uses, so `+61 8` returns `[CX, CC]`.
+ * `+7` is `[KZ, RU]`.
  *
  * Returns `[]` when nothing matches. This checks prefixes only, not whether
  * the number is valid. Results are in dataset order, in a fresh array; the

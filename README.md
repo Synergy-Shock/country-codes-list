@@ -282,7 +282,7 @@ Countries that share the calling code are narrowed by `areaCodes`:
 - If the next digits can still become a recorded area code (`+1`, `+1 8`), the result is every country with that calling code.
 - Otherwise the result is the countries with no recorded area codes (`+1 212` is US and UM). If every country in the group records area codes, the result is the whole group (`+599 5` is BQ and CW).
 
-Groups with no area codes are not narrowed: `+44` returns all four. `CX` and `CC` record area code `8`, which Western Australia also uses, so `+61 8` returns `CX` and `CC`. The function checks prefixes only. It does not validate the number. Results keep dataset order.
+Groups with no area codes are not narrowed: `+44` returns all four. `+61 8 9164` returns `CX` and `+61 8 9162` returns `CC`; other `+61` numbers, including their mobiles, return `AU`. The function checks prefixes only. It does not validate the number. Results keep dataset order.
 
 ```js
 countryCodes.findByPhonePrefix("+1 876 555 0100").map((c) => c.countryCode); // ['JM']
