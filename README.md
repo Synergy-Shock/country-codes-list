@@ -10,9 +10,9 @@ Country data for forms, phone inputs and invoices: ISO codes, currency with mino
 [![CI](https://github.com/Synergy-Shock/country-codes-list/actions/workflows/ci.yml/badge.svg)](https://github.com/Synergy-Shock/country-codes-list/actions/workflows/ci.yml)
 [![license](https://img.shields.io/npm/l/country-codes-list)](https://github.com/Synergy-Shock/country-codes-list/blob/master/LICENSE)
 
-<!-- PLAYGROUND LINK: remove this block if GitHub Pages is not enabled for the repo. -->
+<!-- PLAYGROUND LINK (placeholder): the page is not live yet (404). When GitHub Pages serves it, move the line below out of this comment. If Pages is not enabled, delete this whole comment.
 **Playground:** [synergy-shock.github.io/country-codes-list](https://synergy-shock.github.io/country-codes-list/) (search and filter the dataset in the browser)
-<!-- END PLAYGROUND LINK -->
+-->
 
 ```bash
 npm install country-codes-list
@@ -44,7 +44,7 @@ Each of the 250 records has these fields. See [Data fields](#data-fields) for ty
 
 ## Compared with other packages
 
-Checked on 2026-10-16 against the latest npm versions. Size is the whole main entry, bundled with esbuild, minified and gzipped.
+Checked on 2026-10-16 against the latest npm versions. Size is the browser entry bundled with esbuild, minified and gzipped.
 
 | | country-codes-list 3.2 | [countries-list](https://www.npmjs.com/package/countries-list) 3.4 | [i18n-iso-countries](https://www.npmjs.com/package/i18n-iso-countries) 7.14 | [world-countries](https://www.npmjs.com/package/world-countries) 5.1 | [libphonenumber-js](https://www.npmjs.com/package/libphonenumber-js) 1.13 |
 | --- | --- | --- | --- | --- | --- |
@@ -56,20 +56,20 @@ Checked on 2026-10-16 against the latest npm versions. Size is the whole main en
 | Calling code | yes | yes | no | yes | yes |
 | Phone number check | digit counts only | no | no | no | full parse, validation, formatting |
 | Tax ID name (VAT, EIN, CUIT) | 64 countries | no | no | no | no |
-| Languages | first official language | all, ISO 639-1 | no | all, with names | no |
+| Languages | first official language | several per country, ISO 639-1 | no | several per country, with names | no |
 | Capital, borders, TLD, coordinates | no | capital only | no | yes | no |
 | Flag emoji | field | `getEmojiFlag()` | no | field | no |
 | ESM build | no (CommonJS, works with `import`) | yes | no | yes | yes |
 | TypeScript types | yes | yes | yes | yes | yes |
 | Runtime dependencies | 0 | 0 | 1 | 0 | 0 |
-| Min + gzip | 19 KB | 15 KB | 7 KB, plus about 2.5 KB per locale | 124 KB | 51 KB |
+| Min + gzip | 19 KB | 15 KB | 7 KB, plus about 2.5 KB per registered locale (the Node entry loads all 78) | 124 KB | 51 KB |
 | License | MIT | MIT | MIT | ODbL 1.0 | MIT |
 
 Use another package instead if you need:
 
 - **Country names in many languages:** `i18n-iso-countries`, or `Intl.DisplayNames` (see [Translated country names](#translated-country-names)).
 - **Real phone number validation or formatting:** `libphonenumber-js`. This package only checks the digit count.
-- **Capitals, borders, coordinates, area or every official language:** `world-countries` (note its ODbL license).
+- **Capitals, borders, coordinates, area or several languages per country:** `world-countries` (note its ODbL license).
 - **A native ESM build or the smallest bundle with names, capitals and languages:** `countries-list`.
 
 These packages join well with this one on `countryCode`.
