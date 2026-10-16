@@ -31,7 +31,7 @@ import { applyGenerated, DATASET_PATH, readRecords } from "./dataset.mjs";
  * produces is meaningless. Bump this deliberately, and record the new ref in
  * the commit message.
  */
-const LIBPHONENUMBER_REF = "v9.0.35";
+const LIBPHONENUMBER_REF = "v9.0.41";
 
 const METADATA_URL = (ref) =>
   `https://raw.githubusercontent.com/google/libphonenumber/${ref}/resources/PhoneNumberMetadata.xml`;

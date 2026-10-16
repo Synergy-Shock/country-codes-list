@@ -199,7 +199,7 @@ const REGION_TAXONOMY = new Set([
 /**
  * Every field the package documents as always populated.
  *
- * `tinType` and `tinName` are deliberately absent: 188 of 250 records leave
+ * `tinType` and `tinName` are deliberately absent: 187 of 250 records leave
  * them empty, which the README treats as "this country has no VAT/TIN scheme
  * recorded" rather than as missing data. `altCodes` and `areaCodes` are absent
  * because they are arrays, not strings.
