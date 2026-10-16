@@ -132,8 +132,7 @@ const countriesData: CountryData[] = [
   },
   {
     countryNameEn: "Afghanistan",
-    countryNameLocal:
-      "د افغانستان اسلامي دولتدولت اسلامی افغانستان, جمهوری اسلامی افغانستان",
+    countryNameLocal: "افغانستان",
     countryCode: "AF",
     countryCodeAlpha3: "AFG",
     currencyCode: "AFN",
@@ -1797,7 +1796,7 @@ const countriesData: CountryData[] = [
   },
   {
     countryNameEn: "Equatorial Guinea",
-    countryNameLocal: "Guiena ecuatorial, Guinée équatoriale, Guiné Equatorial",
+    countryNameLocal: "Guinea Ecuatorial, Guinée équatoriale, Guiné Equatorial",
     countryCode: "GQ",
     countryCodeAlpha3: "GNQ",
     currencyCode: "XAF",
@@ -1825,8 +1824,8 @@ const countriesData: CountryData[] = [
     altCodes: ["EL"],
     currencyCode: "EUR",
     currencyNameEn: "Euro",
-    tinType: "",
-    tinName: "",
+    tinType: "ΑΦΜ",
+    tinName: "Αριθμός Φορολογικού Μητρώου",
     officialLanguageCode: "el",
     officialLanguageNameEn: "Greek, Modern (1453-)",
     officialLanguageNameLocal: "ελληνικά",
@@ -3163,7 +3162,7 @@ const countriesData: CountryData[] = [
   },
   {
     countryNameEn: "Mozambique",
-    countryNameLocal: "Mozambique",
+    countryNameLocal: "Moçambique",
     countryCode: "MZ",
     countryCodeAlpha3: "MOZ",
     currencyCode: "MZN",
@@ -3427,7 +3426,7 @@ const countriesData: CountryData[] = [
   },
   {
     countryNameEn: "Panama",
-    countryNameLocal: "Panama",
+    countryNameLocal: "Panamá",
     countryCode: "PA",
     countryCodeAlpha3: "PAN",
     currencyCode: "PAB",
@@ -3625,7 +3624,7 @@ const countriesData: CountryData[] = [
   },
   {
     countryNameEn: "Palestine, State of",
-    countryNameLocal: "Palestinian Territory",
+    countryNameLocal: "فلسطين",
     countryCode: "PS",
     countryCodeAlpha3: "PSE",
     currencyCode: "ILS",
@@ -3999,7 +3998,7 @@ const countriesData: CountryData[] = [
   },
   {
     countryNameEn: "Svalbard and Jan Mayen",
-    countryNameLocal: "Svalbard and Jan Mayen",
+    countryNameLocal: "Svalbard og Jan Mayen",
     countryCode: "SJ",
     countryCodeAlpha3: "SJM",
     currencyCode: "NOK",
@@ -4109,7 +4108,7 @@ const countriesData: CountryData[] = [
   },
   {
     countryNameEn: "Somalia",
-    countryNameLocal: "Somalia, الصومال",
+    countryNameLocal: "Soomaaliya, الصومال",
     countryCode: "SO",
     countryCodeAlpha3: "SOM",
     currencyCode: "SOS",
@@ -4941,7 +4940,7 @@ const countriesData: CountryData[] = [
     currencyNumeric: "924",
     currencyDecimals: 2,
     currencySymbol: "ZWG",
-    nationalNumberLengths: [5, 6, 7, 8, 9, 10],
+    nationalNumberLengths: [7, 9],
   },
   {
     countryNameEn: "Eswatini",
@@ -4967,7 +4966,7 @@ const countriesData: CountryData[] = [
   },
   {
     countryNameEn: "North Macedonia",
-    countryNameLocal: "Македонија",
+    countryNameLocal: "Северна Македонија",
     countryCode: "MK",
     countryCodeAlpha3: "MKD",
     currencyCode: "MKD",
@@ -5095,7 +5094,7 @@ const countriesData: CountryData[] = [
     currencyNumeric: "270",
     currencyDecimals: 2,
     currencySymbol: "GMD",
-    nationalNumberLengths: [7],
+    nationalNumberLengths: [7, 9],
   },
   {
     countryNameEn: "Dominican Republic",
@@ -5165,7 +5164,7 @@ const countriesData: CountryData[] = [
   },
   {
     countryNameEn: "Taiwan, Province of China",
-    countryNameLocal: "Taiwan",
+    countryNameLocal: "台灣",
     countryCode: "TW",
     countryCodeAlpha3: "TWN",
     currencyCode: "TWD",
@@ -5276,7 +5275,7 @@ const countriesData: CountryData[] = [
   },
   {
     countryNameEn: "Democratic Republic of the Congo",
-    countryNameLocal: "Democratic Republic of the Congo",
+    countryNameLocal: "République démocratique du Congo",
     countryCode: "CD",
     countryCodeAlpha3: "COD",
     currencyCode: "CDF",
@@ -5408,7 +5407,7 @@ const countriesData: CountryData[] = [
   },
   {
     countryNameEn: "Faroe Islands",
-    countryNameLocal: "Færøerne",
+    countryNameLocal: "Føroyar",
     countryCode: "FO",
     countryCodeAlpha3: "FRO",
     currencyCode: "DKK",

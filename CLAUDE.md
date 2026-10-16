@@ -45,8 +45,8 @@ Templates use `{placeholder}` syntax with any string or number field. Array fiel
 | `currencyNumeric` | `string` | all but `AQ` | Three digits. Generated. |
 | `currencyDecimals` | `number \| null` | all but `AQ` (`null`) | `0` for JPY, `3` for BHD. Generated. |
 | `currencySymbol` | `string` | all but `AQ` | Not unique: 29 currencies show `$`. Falls back to the code (`CHF`). Generated. |
-| `tinType` | `string` | 62 of 250 | Empty string means "not recorded". |
-| `tinName` | `string` | 64 of 250 | Empty string means "not recorded". |
+| `tinType` | `string` | 63 of 250 | Empty string means "not recorded". |
+| `tinName` | `string` | 65 of 250 | Empty string means "not recorded". |
 | `officialLanguageCode` | `string` | all | ISO 639-1, or ISO 639-3 when no 639-1 code exists. First official language only. |
 | `officialLanguageNameEn` | `string` | all | |
 | `officialLanguageNameLocal` | `string` | all | |

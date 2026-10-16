@@ -77,8 +77,8 @@ Each record is a `CountryData` object. The example column shows the `US` record.
 | `currencyNumeric` | `string` | `"840"` | ISO 4217 numeric, three digits. Empty for `AQ`. Source: [ISO 4217 List One](https://www.six-group.com/en/products-services/financial-information/data-standards.html). |
 | `currencyDecimals` | `number \| null` | `2` | ISO 4217 minor units: `0` for JPY, `3` for BHD. `null` for `AQ`. Same source. |
 | `currencySymbol` | `string` | `"$"` | CLDR English narrow symbol from Node's ICU. Not unique. Falls back to the code (`"CHF"`). Empty for `AQ`. |
-| `tinType` | `string` | `"EIN"` | Short name of the tax identifier. Populated for 62 of 250 records. Source: [Wikipedia](https://en.wikipedia.org/wiki/VAT_identification_number). |
-| `tinName` | `string` | `"Tax Identification Number"` | Full name of the tax identifier. Populated for 64 of 250 records. Same source. |
+| `tinType` | `string` | `"EIN"` | Short name of the tax identifier. Populated for 63 of 250 records. Source: [Wikipedia](https://en.wikipedia.org/wiki/VAT_identification_number). |
+| `tinName` | `string` | `"Tax Identification Number"` | Full name of the tax identifier. Populated for 65 of 250 records. Same source. |
 | `officialLanguageCode` | `string` | `"en"` | ISO 639-1 code of the first official language. ISO 639-3 when the language has no 639-1 code. Source: [OSM Nominatim](https://wiki.openstreetmap.org/wiki/Nominatim/Country_Codes). |
 | `officialLanguageNameEn` | `string` | `"English"` | English name of that language. |
 | `officialLanguageNameLocal` | `string` | `"English"` | Name of that language in the language itself. |
