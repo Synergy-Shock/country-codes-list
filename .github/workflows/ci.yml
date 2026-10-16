@@ -36,17 +36,28 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - name: Pack, install and import the tarball
+      - name: Pack the tarball
+        run: echo "TARBALL=$PWD/$(npm pack --silent)" >> "$GITHUB_ENV"
+      - name: Install the tarball and run the TypeScript check (Node 22)
         run: |
-          TARBALL="$PWD/$(npm pack --silent)"
           SMOKE="$(mktemp -d)"
           cd "$SMOKE"
           npm init -y >/dev/null
           npm install --no-audit --no-fund "$TARBALL" typescript@5 @types/node@22
-          node -e "const c = require('country-codes-list').findOneByCode('UK'); if (!c || c.countryCode !== 'GB') process.exit(1)"
           cat > check.ts <<'EOF'
           import { findOneByCode, CountryData } from "country-codes-list";
           const c: CountryData | undefined = findOneByCode("UK");
           export const code: string | undefined = c?.countryCode;
           EOF
           npx tsc --noEmit --strict --esModuleInterop --module commonjs --moduleResolution node10 --target es2020 --types node check.ts
+      # engines still allows Node >=18, so prove the packed CommonJS build loads there.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 18
+      - name: Require the tarball on Node 18
+        run: |
+          SMOKE="$(mktemp -d)"
+          cd "$SMOKE"
+          npm init -y >/dev/null
+          npm install --no-audit --no-fund "$TARBALL"
+          node -e "const c = require('country-codes-list').findOneByCode('UK'); if (!c || c.countryCode !== 'GB') process.exit(1)"
