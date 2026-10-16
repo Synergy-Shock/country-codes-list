@@ -24,7 +24,16 @@ jobs:
           cache: npm
       # Node 22 ships npm 10; Trusted Publishing requires npm >= 11.5.1.
       - name: Upgrade npm for Trusted Publishing
-        run: npm install -g npm@latest
+        run: npm install -g npm@11
+      - name: Check tag matches package.json version
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          VERSION="v$(node -p "require('./package.json').version")"
+          if [ "$TAG" != "$VERSION" ]; then
+            echo "Tag $TAG does not match package.json version $VERSION" >&2
+            exit 1
+          fi
       - name: Install dependencies
         run: npm ci
       - name: Build project
@@ -40,12 +49,13 @@ jobs:
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
         run: |
-          if gh release view "${{ github.ref_name }}" >/dev/null 2>&1; then
-            echo "Release ${{ github.ref_name }} already exists, skipping."
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists, skipping."
           else
-            gh release create "${{ github.ref_name }}" \
-              --title "${{ github.ref_name }}" \
+            gh release create "$TAG" \
+              --title "$TAG" \
               --generate-notes \
               --verify-tag
           fi

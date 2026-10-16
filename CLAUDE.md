@@ -162,7 +162,7 @@ Rules for the generators:
 
 - The currency and number-length generators need network access. No generator runs in CI.
 - Each one rewrites only its own field lines in `src/countriesData.ts`. A second run produces no diff.
-- `--check` is a dry run that exits with code 1 on drift.
+- `--check` is a dry run that exits with code 1 on drift. Use `npm run data:check` for all three; `npm run data:all -- --check` is NOT a dry run (the flag reaches only the last script). Use `npm run data:check` for all three; `npm run data:all -- --check` is NOT a dry run (the flag reaches only the last script).
 - If you change `currencyCode` by hand, run `npm run data:currencies` afterwards so the derived fields follow.
 - When you regenerate, record the source version (List One `Pblshd` date, CLDR version, libphonenumber tag) in the commit message. The scripts print these values.
 
