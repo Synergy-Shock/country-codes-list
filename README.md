@@ -344,7 +344,7 @@ Five fields are written by scripts, not by hand. Do not edit them manually. The 
 | `npm run data:number-lengths` | `nationalNumberLengths` | libphonenumber `PhoneNumberMetadata.xml`, pinned to a tag. |
 | `npm run data:all` | All of the above | Runs the three scripts in order. |
 
-Each script replaces only its own field in `src/countriesData.ts`. A second run makes no change. Add `--check` for a dry run that exits with code 1 on drift.
+Each script replaces only its own field in `src/countriesData.ts`. A second run makes no change. Run `npm run data:check` for a dry run of all three that exits with code 1 on drift. (`npm run data:all -- --check` is not a dry run.)
 
 ### Invariant tests and the known-gaps ledger
 

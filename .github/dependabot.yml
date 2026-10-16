@@ -11,6 +11,9 @@ updates:
       # ts-jest 29 requires typescript >=4.3 <7. Drop this once ts-jest supports TS 7.
       - dependency-name: typescript
         versions: [">=7"]
+      # Keep @types/node at the engines floor (Node 22); bump together with "engines".
+      - dependency-name: "@types/node"
+        versions: [">=23"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
