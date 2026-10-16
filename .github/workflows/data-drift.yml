@@ -12,6 +12,10 @@ permissions:
   contents: read
   issues: write
 
+# One run at a time, so the issue lookup and create cannot race into duplicates.
+concurrency:
+  group: data-drift
+
 jobs:
   drift:
     runs-on: ubuntu-latest
@@ -30,13 +34,11 @@ jobs:
           LP_TAG="$(gh api repos/google/libphonenumber/releases/latest --jq .tag_name)"
           echo "libphonenumber latest release: $LP_TAG"
           STATUS=0
-          {
-            echo "### Currencies (ISO 4217 List One + CLDR)"
-            node scripts/generate-currencies.mjs --check || STATUS=1
-            echo
-            echo "### Number lengths (libphonenumber $LP_TAG)"
-            node scripts/generate-national-number-lengths.mjs --check "--ref=$LP_TAG" || STATUS=1
-          } 2>&1 | tee drift.txt
+          echo "### Currencies (ISO 4217 List One + CLDR)" > drift.txt
+          node scripts/generate-currencies.mjs --check >> drift.txt 2>&1 || STATUS=1
+          printf '\n### Number lengths (libphonenumber %s)\n' "$LP_TAG" >> drift.txt
+          node scripts/generate-national-number-lengths.mjs --check "--ref=$LP_TAG" >> drift.txt 2>&1 || STATUS=1
+          cat drift.txt
           echo "drift=$STATUS" >> "$GITHUB_OUTPUT"
       - name: Open or update the drift issue
         if: steps.check.outputs.drift == '1'

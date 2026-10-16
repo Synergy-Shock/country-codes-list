@@ -139,7 +139,6 @@ function recordSources(sources) {
  */
 export function applyGenerated(fields, { argv = process.argv.slice(2), sources = {} } = {}) {
   const check = argv.includes("--check");
-  if (!check) recordSources(sources);
   const original = readFileSync(DATASET_PATH, "utf8");
   let source = original;
   let total = 0;
@@ -155,6 +154,9 @@ export function applyGenerated(fields, { argv = process.argv.slice(2), sources =
       );
     }
   }
+
+  // Only after every field derived successfully, so a failed run never advances the recorded versions.
+  if (!check) recordSources(sources);
 
   if (source === original) {
     console.log("in sync, 0 changes");
