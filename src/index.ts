@@ -1,4 +1,4 @@
-import groupBy from "./utils/groupBy";
+import groupBy, { pushToGroup } from "./utils/groupBy";
 import supplant from "./utils/supplant";
 import countriesData, {
   CountryData,
@@ -117,20 +117,37 @@ export function findOneByCode(code: string): CountryData | undefined {
  * (`"countryNameEn"`, …) before rendering. Both use a locale-aware,
  * accent-sensitive collator.
  */
+type CustomArrayOptions<F> = {
+  sortBy?: keyof F;
+  sortDataBy?: CountryScalarProperty;
+  filter?: (cd: CountryData) => boolean;
+};
+
+const DEFAULT_ARRAY_FIELDS = {
+  name: "{countryNameEn} ({countryCode})",
+  value: "{countryCode}",
+};
+
+// Without `fields` the output is always { name, value }, so that overload
+// takes no type parameter: `customArray<{ foo: string }>()` cannot claim a
+// shape the call does not produce, and `sortBy` is checked against
+// "name" | "value".
+export function customArray(
+  fields?: undefined,
+  options?: CustomArrayOptions<typeof DEFAULT_ARRAY_FIELDS>
+): Record<"name" | "value", string>[];
 export function customArray<F extends Record<string, string>>(
-  fields: F = {
-    name: "{countryNameEn} ({countryCode})",
-    value: "{countryCode}",
-  } as unknown as F,
-  {
-    sortBy,
-    sortDataBy,
-    filter: filterFunc,
-  }: {
-    sortBy?: keyof F;
-    sortDataBy?: CountryScalarProperty;
-    filter?: (cd: CountryData) => boolean;
-  } = {}
+  fields: F,
+  options?: CustomArrayOptions<F>
+): Record<keyof F, string>[];
+// For callers that forward an optional `fields` argument of the default shape.
+export function customArray(
+  fields: typeof DEFAULT_ARRAY_FIELDS | undefined,
+  options?: CustomArrayOptions<typeof DEFAULT_ARRAY_FIELDS>
+): Record<"name" | "value", string>[];
+export function customArray<F extends Record<string, string>>(
+  fields: F = DEFAULT_ARRAY_FIELDS as Record<string, string> as F,
+  { sortBy, sortDataBy, filter: filterFunc }: CustomArrayOptions<F> = {}
 ): Record<keyof F, string>[] {
   const finalCollection: Record<keyof F, string>[] = [];
   let data: CountryData[] = countriesData;
@@ -156,7 +173,13 @@ export function customArray<F extends Record<string, string>>(
     finalCollection.push(collectionObject);
   });
 
-  if (sortBy && fields[sortBy]) {
+  // Sort when `sortBy` is a rendered key. Not template truthiness: an empty
+  // template ("") is still a key, while Object.prototype names are not.
+  if (
+    sortBy !== undefined &&
+    finalCollection.length > 0 &&
+    Object.prototype.hasOwnProperty.call(finalCollection[0], sortBy)
+  ) {
     const collator = new Intl.Collator([], { sensitivity: "accent" });
     finalCollection.sort((a, b) => collator.compare(a[sortBy], b[sortBy]));
   }
@@ -216,11 +239,11 @@ export function customGroupedList(
     data = data.filter(filterFunc);
   }
   data.forEach((countryData: CountryData) => {
-    const groupKey = String(countryData[key]);
-    if (!finalObject[groupKey]) {
-      finalObject[groupKey] = [];
-    }
-    finalObject[groupKey].push(supplant(label, countryData));
+    pushToGroup(
+      finalObject,
+      String(countryData[key]),
+      supplant(label, countryData)
+    );
   });
 
   return finalObject;

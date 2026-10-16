@@ -1,5 +1,8 @@
 /**
  * Replaces placeholders in a string with values from an object.
+ *
+ * `null` renders as an empty string. Unknown names, `undefined` and non-scalar
+ * values (arrays, objects) leave the placeholder as written.
  * @param template - The string containing placeholders.
  * @param data - The object containing key-value pairs for replacement.
  * @returns The string with placeholders replaced by values.
@@ -12,6 +15,7 @@ export default function supplant(
     /{([^{}]*)}/g,
     (match: string, key: string): string => {
       const value = data[key];
+      if (value === null) return "";
       return typeof value === "string" || typeof value === "number"
         ? value.toString()
         : match;

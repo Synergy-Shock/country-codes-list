@@ -190,7 +190,7 @@ customList(
 ): Record<string, string>
 ```
 
-Returns an object with one entry per country. `key` selects the property that becomes the object key. `label` is a template. Each `{placeholder}` is replaced with the value of that property. Unknown placeholders and array fields stay as written.
+Returns an object with one entry per country. `key` selects the property that becomes the object key. `label` is a template. Each `{placeholder}` is replaced with the value of that property. Unknown placeholders and array fields stay as written. A `null` value (`currencyDecimals` for `AQ`) renders as an empty string.
 
 ```js
 countryCodes.customList("countryCode", "[{countryCode}] {countryNameEn}: +{countryCallingCode}");

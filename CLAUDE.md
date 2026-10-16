@@ -28,7 +28,7 @@ import * as countryCodes from "country-codes-list";    // through Node's CJS int
 
 Types: `CountryData` (one record), `CountryProperty` (every key), `CountryScalarProperty` (string-valued keys only). All key parameters above take `CountryScalarProperty`.
 
-Templates use `{placeholder}` syntax with any string or number field. Array fields and unknown names stay in the output as written.
+Templates use `{placeholder}` syntax with any string or number field. Array fields and unknown names stay in the output as written. A `null` value (`currencyDecimals` for `AQ`) renders as an empty string.
 
 ## Field table
 
@@ -60,6 +60,7 @@ Templates use `{placeholder}` syntax with any string or number field. Array fiel
 
 - Use `findOneByCode` for codes from outside your code (locales, VAT numbers, APIs). It accepts alpha-2, alpha-3, `altCodes` and 3-digit numeric codes, case-insensitive.
 - Use `findOne("countryCode", x)` only for exact, uppercase ISO codes. `findOne("countryCode", "UK")` is `undefined`.
+- Reject empty input before `findOne` or `filter`. An empty string matches "not recorded" fields: `findOne("currencyCode", "")` returns `AQ`.
 - Use `includes`, never min/max, on `nationalNumberLengths`. NL is `[9, 11]`, so 10 digits is invalid.
 - Strip the trunk prefix (the leading `0`) before you compare a length. Keep the area code.
 - Treat an empty `areaCodes` or `nationalNumberLengths` as "not recorded", never as "none".
