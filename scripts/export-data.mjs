@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Emits the dataset as `dist/countries.json` and `dist/countries.csv`, for
+ * Emits the dataset as `dist/countries.json`, `dist/countries.csv` and
+ * `dist/metadata.json` (package version, record count, upstream data versions), for
  * consumers that are not JavaScript (spreadsheets, Python, SQL loaders, a CDN
  * URL). Runs after `tsc` as part of `npm run build`, so both files ship in the
  * package next to `dist/index.js`.
@@ -10,7 +11,7 @@
  * quote, comma or line break, with embedded quotes doubled).
  */
 
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
@@ -38,5 +39,13 @@ const cell = (value) => {
 
 const rows = [header, ...countries.map((record) => header.map((key) => cell(record[key] ?? "")))];
 writeFileSync(new URL("countries.csv", dist), rows.map((row) => row.join(",")).join("\n") + "\n");
+
+// Upstream versions recorded by the generators, plus package version and size.
+const sources = JSON.parse(readFileSync(new URL("../src/dataSources.json", import.meta.url), "utf8"));
+const { version } = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
+writeFileSync(
+  new URL("metadata.json", dist),
+  JSON.stringify({ version, recordCount: countries.length, sources }, null, 2) + "\n"
+);
 
 console.log(`exported ${countries.length} countries to dist/countries.json and dist/countries.csv`);

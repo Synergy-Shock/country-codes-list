@@ -237,4 +237,4 @@ applyGenerated([
     "nationalNumberLengths",
     (record) => `[${derived.get(record.countryCode).join(", ")}]`,
   ],
-]);
+], { sources: { libphonenumber: ref } });

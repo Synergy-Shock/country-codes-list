@@ -19,6 +19,8 @@ export const DATASET_PATH = fileURLToPath(
   new URL("../src/countriesData.ts", import.meta.url)
 );
 
+const SOURCES_PATH = fileURLToPath(new URL("../src/dataSources.json", import.meta.url));
+
 /** Canonical order of the script-generated fields at the end of a record. */
 export const GENERATED_FIELD_ORDER = [
   "countryCodeNumeric",
@@ -116,11 +118,26 @@ export function upsertField(source, field, valueFor) {
 }
 
 /**
+ * Merges the upstream versions a generator used into `src/dataSources.json`.
+ * Writes only when a value changed, so a second run leaves no diff. Skipped
+ * with `--check`. `export-data.mjs` copies the file into `dist/metadata.json`.
+ */
+function recordSources(sources) {
+  let current = {};
+  try {
+    current = JSON.parse(readFileSync(SOURCES_PATH, "utf8"));
+  } catch {}
+  const next = { ...current, ...sources };
+  const text = JSON.stringify(next, null, 2) + "\n";
+  if (text !== JSON.stringify(current, null, 2) + "\n") writeFileSync(SOURCES_PATH, text);
+}
+
+/**
  * Standard generator entry point: applies every `[field, valueFor]` pair,
  * prints the drift, and writes the dataset. With `--check` it writes nothing
  * and exits 1 when anything would change, so it doubles as a re-sync check.
  */
-export function applyGenerated(fields, { argv = process.argv.slice(2) } = {}) {
+export function applyGenerated(fields, { argv = process.argv.slice(2), sources = {} } = {}) {
   const check = argv.includes("--check");
   const original = readFileSync(DATASET_PATH, "utf8");
   let source = original;
@@ -137,6 +154,9 @@ export function applyGenerated(fields, { argv = process.argv.slice(2) } = {}) {
       );
     }
   }
+
+  // Only after every field derived successfully, so a failed run never advances the recorded versions.
+  if (!check) recordSources(sources);
 
   if (source === original) {
     console.log("in sync, 0 changes");
